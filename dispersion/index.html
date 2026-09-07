@@ -5,7 +5,7 @@ title: Portfolio Dispersion
 
 <div class="text-section dispersion-page">
   <h2>Portfolio Dispersion</h2>
-  <p class="intro">See how widely the holdings in a saved portfolio are moving relative to one another. The fan opens as more constituent variance is diversified away.</p>
+  <p class="intro">See how widely the holdings in a saved portfolio are moving relative to one another. The fan opens according to where dispersion ranks in that portfolio’s recent history.</p>
 
   <section class="controls" aria-label="Dispersion controls">
     <label><strong>Saved portfolio</strong>
@@ -24,9 +24,22 @@ title: Portfolio Dispersion
       <div id="badge" class="badge waiting">Waiting for data</div>
     </header>
     <div id="fan" class="fan" role="img" aria-label="Portfolio dispersion fan"></div>
+    <div id="historyControls" class="history-controls" hidden>
+      <div class="history-buttons">
+        <button id="historyReset" type="button">Reset</button>
+        <button id="historyPlay" type="button">Play</button>
+        <button id="historyPause" type="button" disabled>Pause</button>
+        <button id="historyLatest" type="button">Latest</button>
+      </div>
+      <div class="history-slider-wrap">
+        <input id="historySlider" type="range" min="0" max="0" value="0" aria-label="Dispersion history date">
+        <div id="historyDate" class="history-date">Latest</div>
+      </div>
+      <div id="historyChange" class="history-change"></div>
+    </div>
     <div id="metrics" class="metrics"></div>
     <div id="legend" class="legend"></div>
-    <p class="note"><strong>How to read it:</strong> a narrow fan means the holdings are behaving more like one trade. A wide fan means their movements are offsetting one another. Width is not a danger score; read it together with portfolio volatility.</p>
+    <p class="note"><strong>How to read it:</strong> fan width shows the historical percentile of absolute dispersion for this portfolio. The percentage below is the actual annualized dispersion. Width is not a danger score; read it together with portfolio volatility and the variance diversified away.</p>
   </section>
 </div>
 
@@ -48,6 +61,14 @@ title: Portfolio Dispersion
 .badge.waiting { border-color:#bbb; background:#f2f2f2; color:#666; }
 .fan { width:100%; max-width:820px; min-height:295px; margin:2px auto 0; }
 .fan svg { display:block; width:100%; height:auto; }
+.history-controls { max-width:820px; margin:-2px auto 13px; padding:9px 11px; border:1px solid #d9dfd5; border-radius:7px; background:#f7f9f5; }
+.history-buttons { display:flex; justify-content:center; gap:6px; flex-wrap:wrap; margin-bottom:7px; }
+.history-buttons button { padding:4px 10px; border:1px solid #9aa894; border-radius:5px; background:#fff; color:#315d22; cursor:pointer; }
+.history-buttons button:disabled { opacity:.45; cursor:default; }
+.history-slider-wrap { position:relative; padding-bottom:20px; }
+#historySlider { width:100%; accent-color:#59a83a; }
+.history-date { position:absolute; left:50%; bottom:0; transform:translateX(-50%); color:#315d22; font-size:11px; font-weight:700; white-space:nowrap; }
+.history-change { min-height:16px; margin-top:3px; color:#555; font-size:11px; text-align:center; }
 .metrics { display:grid; grid-template-columns:repeat(3,minmax(145px,1fr)); gap:10px; max-width:770px; margin:0 auto 11px; }
 .metric { padding:7px 4px 3px; border-top:2px solid #92ad85; text-align:center; }
 .metric-value { color:#222; font-size:21px; line-height:1.2; font-weight:700; font-variant-numeric:tabular-nums; }
@@ -64,6 +85,7 @@ title: Portfolio Dispersion
   "use strict";
   const PORTFOLIOS_KEY = "RiskSnapSavedPortfolios";
   const ENDPOINT = "https://surface-203178530029.northamerica-northeast2.run.app/correlations_data";
+  const HISTORY_ENDPOINT = "https://surface-203178530029.northamerica-northeast2.run.app/rolling_matrix";
   const COLORS = ["#3977c3","#dc7b32","#4f9b63","#a65a9c","#d2a62c","#4c9ea3","#c85555","#7586c4","#77a642","#9a6ac1","#b87949","#3f8f86","#d65f8a","#71834a","#5277a8","#ad6d62","#559eab","#9b8b36","#776aa7","#5f8d58"];
   const FUTURES = {
     "GOLD":{yahoo:"MGC=F",factor:10},"OIL":{yahoo:"CL=F",factor:1000},"CORN":{yahoo:"ZC=F",factor:5000,cents:true},
@@ -77,6 +99,9 @@ title: Portfolio Dispersion
   const $ = id => document.getElementById(id);
   const esc = value => String(value).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
   const pct = value => Number.isFinite(value) ? (value * 100).toFixed(2) + "%" : "—";
+  let historyRows=[];
+  let historyTimer=null;
+  let historyContext=null;
 
   function portfolios(){
     try { const p=JSON.parse(localStorage.getItem(PORTFOLIOS_KEY)||"{}"); return p&&typeof p==="object"&&!Array.isArray(p)?p:{}; }
@@ -118,10 +143,11 @@ title: Portfolio Dispersion
   }
   function point(cx,cy,r,deg){ const a=deg*Math.PI/180; return [cx+r*Math.sin(a),cy-r*Math.cos(a)]; }
   function sectorPath(cx,cy,r,start,end){ const a=point(cx,cy,r,start), b=point(cx,cy,r,end); return `M ${cx} ${cy} L ${a[0]} ${a[1]} A ${r} ${r} 0 0 1 ${b[0]} ${b[1]} Z`; }
-  function render(result,name,lookback,date){
+  function render(result,name,lookback,date,percentile){
     const share=Math.max(0,Math.min(1,result.share));
-    const opening=12+share*138, start=-opening/2, end=opening/2, cx=410, cy=292, radius=230;
-    let svg=`<svg viewBox="0 0 820 320" aria-labelledby="fanSvgTitle"><title id="fanSvgTitle">${esc(name)} dispersion fan, ${pct(share)} of constituent variance diversified away</title>`;
+    const rank=Math.max(0,Math.min(1,Number(percentile)||0));
+    const opening=12+rank*138, start=-opening/2, end=opening/2, cx=410, cy=292, radius=230;
+    let svg=`<svg viewBox="0 0 820 320" aria-labelledby="fanSvgTitle"><title id="fanSvgTitle">${esc(name)} dispersion ${pct(result.dispersion)}, historical percentile ${Math.round(rank*100)}</title>`;
     svg+=`<path d="${sectorPath(cx,cy,radius,start,end)}" fill="#7ebd68" fill-opacity=".12" stroke="#8cae7f" stroke-width="1.2"/>`;
     [0.25,0.5,0.75,1].forEach(f=>{const a=point(cx,cy,radius*f,start),b=point(cx,cy,radius*f,end);svg+=`<path d="M ${a[0]} ${a[1]} A ${radius*f} ${radius*f} 0 0 1 ${b[0]} ${b[1]}" fill="none" stroke="#cdd9c7" stroke-dasharray="3 4"/>`;});
     result.positions.forEach((p,i)=>{
@@ -131,11 +157,37 @@ title: Portfolio Dispersion
     });
     svg+=`<circle cx="${cx}" cy="${cy}" r="12" fill="#315d22"/><text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="10" fill="#fff">PF</text></svg>`;
     $("fan").innerHTML=svg;
-    const label=share<.25?"Narrow":share<.5?"Moderate":share<.7?"Wide":"Very wide";
-    $("badge").className="badge"; $("badge").textContent=`${label} dispersion`;
+    const label=rank<.25?"Historically narrow":rank<.5?"Below median":rank<.75?"Above median":"Historically wide";
+    $("badge").className="badge"; $("badge").textContent=`${label} • ${Math.round(rank*100)}th percentile`;
     $("asOf").textContent=`${name} • ${lookback}-day realized measure${date?` • EOD ${date}`:""}`;
-    $("metrics").innerHTML=`<div class="metric"><div class="metric-value">${pct(result.dispersion)}</div><div class="metric-label">Dispersion</div></div><div class="metric"><div class="metric-value">${pct(result.portfolioVol)}</div><div class="metric-label">Portfolio volatility</div></div><div class="metric"><div class="metric-value">${pct(share)}</div><div class="metric-label">Constituent variance diversified away</div></div>`;
+    $("metrics").innerHTML=`<div class="metric"><div class="metric-value">${pct(result.dispersion)}</div><div class="metric-label">Dispersion • ${Math.round(rank*100)}th historical percentile</div></div><div class="metric"><div class="metric-value">${pct(result.portfolioVol)}</div><div class="metric-label">Portfolio volatility</div></div><div class="metric"><div class="metric-value">${pct(share)}</div><div class="metric-label">Constituent variance diversified away</div></div>`;
     $("legend").innerHTML=result.positions.map((p,i)=>`<span class="key"><span class="swatch" style="background:${COLORS[i%COLORS.length]}"></span>${esc(p.asset)} ${pct(p.weight)}</span>`).join("");
+  }
+  function historicalPercentile(value){
+    const values=historyRows.map(row=>row.result.dispersion).filter(Number.isFinite).sort((a,b)=>a-b);
+    if(!values.length) return 0;
+    return values.filter(v=>v<=value).length/values.length;
+  }
+  function renderHistory(index){
+    if(!historyRows.length||!historyContext) return;
+    const i=Math.max(0,Math.min(historyRows.length-1,Number(index)||0)), row=historyRows[i];
+    $("historySlider").value=i;
+    const percentile=historicalPercentile(row.result.dispersion);
+    render(row.result,historyContext.name,historyContext.lookback,row.date,percentile);
+    const prior20=historyRows[Math.max(0,i-20)];
+    const change=row.result.dispersion-prior20.result.dispersion;
+    $("historyChange").textContent=`20-day change: ${change>=0?"+":""}${pct(change)} • Range: ${pct(Math.min(...historyRows.map(r=>r.result.dispersion)))} to ${pct(Math.max(...historyRows.map(r=>r.result.dispersion)))}`;
+    const slider=$("historySlider"), span=Math.max(1,Number(slider.max)-Number(slider.min));
+    $("historyDate").style.left=`${((i-Number(slider.min))/span)*100}%`;
+    $("historyDate").textContent=row.date||`Observation ${i+1}`;
+  }
+  function stopHistory(){ if(historyTimer){clearInterval(historyTimer);historyTimer=null;} $("historyPlay").disabled=false; $("historyPause").disabled=true; }
+  function startHistory(){
+    if(!historyRows.length) return;
+    stopHistory(); $("historyPlay").disabled=true; $("historyPause").disabled=false;
+    if(Number($("historySlider").value)>=historyRows.length-1) $("historySlider").value=0;
+    renderHistory($("historySlider").value);
+    historyTimer=setInterval(()=>{const next=Number($("historySlider").value)+1;if(next>=historyRows.length){stopHistory();return;}renderHistory(next);},180);
   }
   async function calculate(){
     const name=$("portfolioSelect").value, saved=portfolios()[name], lookback=Number($("lookback").value);
@@ -145,16 +197,37 @@ title: Portfolio Dispersion
     securities.forEach(asset=>{const spec=futureSpec(asset); if(spec){const generic=Object.keys(FUTURES).find(k=>FUTURES[k]===spec&&!k.includes("=F"));fx.push(spec.name||generic||asset);}else equities.push(asset);});
     $("calculate").disabled=true; $("status").textContent="Calculating dispersion…";
     try{
-      const response=await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({lookback,fx_gold_oil:fx,yields:[],equities:equities.join(", ")})});
-      const data=await response.json();
-      if(!response.ok) throw new Error((data.messages||[response.statusText]).join(" "));
-      render(analyse(data,saved),name,lookback,String(data.date||data.as_of||"").slice(0,10));
-      $("status").textContent="Dispersion updated.";
+      stopHistory();
+      const request={lookback,fx_gold_oil:fx,yields:[],equities:equities.join(", ")};
+      const [latestResponse,historyResponse]=await Promise.all([
+        fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(request)}),
+        fetch(HISTORY_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...request,frames:250})})
+      ]);
+      const [data,historyData]=await Promise.all([latestResponse.json(),historyResponse.json()]);
+      if(!latestResponse.ok) throw new Error((data.messages||[latestResponse.statusText]).join(" "));
+      if(!historyResponse.ok) throw new Error((historyData.messages||[historyResponse.statusText]).join(" "));
+      const commonAssets=historyData.assets||data.assets||[];
+      historyRows=(historyData.frames||[]).map(frame=>{
+        const normalized={...frame,assets:frame.assets||commonAssets,matrix:frame.matrix||frame.correlation||[],volatility:frame.volatility||[]};
+        try{return {date:String(frame.date||"").slice(0,10),result:analyse(normalized,saved)};}catch(e){return null;}
+      }).filter(Boolean);
+      const latestDate=String(data.date||data.as_of||"").slice(0,10), latestResult=analyse(data,saved);
+      if(!historyRows.length||historyRows.at(-1).date!==latestDate) historyRows.push({date:latestDate||"Latest",result:latestResult});
+      historyContext={name,lookback};
+      $("historyControls").hidden=false;
+      $("historySlider").min=0; $("historySlider").max=historyRows.length-1; $("historySlider").value=historyRows.length-1;
+      renderHistory(historyRows.length-1);
+      $("status").textContent=`Dispersion history updated: ${historyRows.length} observations.`;
     }catch(err){$("status").textContent=`Unable to calculate: ${err.message||err}`;}
     finally{$("calculate").disabled=false;}
   }
   $("calculate").addEventListener("click",calculate);
   $("portfolioSelect").addEventListener("change",()=>{if($("portfolioSelect").value)calculate();});
+  $("historySlider").addEventListener("input",()=>{stopHistory();renderHistory($("historySlider").value);});
+  $("historyReset").addEventListener("click",()=>{stopHistory();renderHistory(0);});
+  $("historyPlay").addEventListener("click",startHistory);
+  $("historyPause").addEventListener("click",stopHistory);
+  $("historyLatest").addEventListener("click",()=>{stopHistory();renderHistory(historyRows.length-1);});
   fillPortfolios();
 })();
 </script>
