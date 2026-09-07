@@ -194,7 +194,7 @@ title: Portfolio Optimization
     <div class="stress-header">
       <div>
         <div class="opt-panel-title">Historical Stress Period</div>
-        <div class="opt-chart-note">Apply the inspected portfolio’s fixed holdings to a selected market episode. Prices and FX are cleaned separately on calendar dates, forward-filled, converted to USD, and then reduced to Monday–Friday observations.</div>
+        <div class="opt-chart-note">Apply the inspected portfolio’s fixed holdings to a selected market episode. The scenario start date is the base valuation date; the first return and MTM change are shown on the following trading day. Prices and FX are cleaned separately on calendar dates, forward-filled, converted to USD, and then reduced to Monday–Friday observations.</div>
       </div>
       <button id="downloadStressCsv" type="button" disabled>Download Stress CSV</button>
     </div>
@@ -1481,12 +1481,12 @@ function updateStressScenarioNote() {
   if (!scenario) {
     note.innerHTML=`<table class="stress-scenario-table"><thead><tr><th>Scenario</th><th>Date range</th><th>Short description</th></tr></thead><tbody>${OPT_STRESS_SCENARIOS.map(item=>{
       const end=item.eod ? "EOD" : item.end;
-      return `<tr><td><strong>${escapeHtml(item.label)}</strong></td><td>${escapeHtml(item.start)} to ${escapeHtml(end)}</td><td>${escapeHtml(item.description)}</td></tr>`;
+      return `<tr><td><strong>${escapeHtml(item.label)}</strong></td><td>Base: ${escapeHtml(item.start)}<br>Through: ${escapeHtml(end)}</td><td>${escapeHtml(item.description)}</td></tr>`;
     }).join("")}</tbody></table>`;
     return;
   }
   const endLabel=scenario.eod ? "latest completed EOD" : scenario.end;
-  note.innerHTML=`<strong>${escapeHtml(scenario.label)}</strong><br><strong>${escapeHtml(scenario.start)} to ${escapeHtml(endLabel)}</strong> — ${escapeHtml(scenario.description)}`;
+  note.innerHTML=`<strong>${escapeHtml(scenario.label)}</strong><br><strong>Base valuation date: ${escapeHtml(scenario.start)}; through ${escapeHtml(endLabel)}.</strong> The first return/MTM change is on the following trading day. — ${escapeHtml(scenario.description)}`;
 }
 
 function resetStressResult() {
@@ -1649,7 +1649,7 @@ async function calculateStressVar() {
     summary.hidden=false;
     summary.innerHTML=`
       <span><strong>Scenario:</strong> ${escapeHtml(scenario.label)}</span>
-      <span><strong>Period:</strong> ${escapeHtml(first)} to ${escapeHtml(last)}</span>
+      <span><strong>Return period:</strong> ${escapeHtml(first)} to ${escapeHtml(last)}</span>
       <span><strong>Securities:</strong> ${result.allocationRows.length} of ${optState.assets.length}</span>
       <span><strong>Observations:</strong> ${result.values.length}</span>
       <span><strong>99% HVaR:</strong> ${fmtMoney(result.varPnl)}</span>
@@ -1672,8 +1672,9 @@ function downloadStressCsv() {
   if (!result || !result.values.length) return;
   const lines=[
     ["Scenario",result.scenario.label],
-    ["Requested start",result.scenario.start],
+    ["Base valuation date",result.scenario.start],
     ["Requested end",result.scenario.end],
+    ["First return / MTM date",result.values[0]?.date || ""],
     ["Cleaning",result.data.cleaning || "RiskSnap calendar cleaning"],
     [],
     ["Date","Previous MTM USD","Current MTM USD","MTM Change / Historical P&L USD","MTM Change %","VaR breach"],
