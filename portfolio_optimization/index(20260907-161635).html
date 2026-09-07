@@ -1404,10 +1404,10 @@ function historicalVarResults(sim) {
   return {values,varPnl,esPnl,tailCount,allocation};
 }
 
-function renderHistoricalVar(sim) {
+function renderHistoricalVar(sim,resultOverride=null) {
   const panel = document.getElementById("optVarPanel");
   const host = document.getElementById("optVarChart");
-  const result = historicalVarResults(sim);
+  const result = resultOverride || historicalVarResults(sim);
   optState.varResult = result;
   panel.hidden = false;
   document.getElementById("downloadVarCsv").disabled = !result.values.length;
@@ -1537,6 +1537,36 @@ function stressVarResults(sim, data, scenario) {
   const varPnl = sorted[tailCount-1];
   const esPnl = sorted.slice(0,tailCount).reduce((sum,value) => sum+value,0)/tailCount;
   return {values,varPnl,esPnl,tailCount,allocationRows,scenario,data};
+}
+
+async function canonicalCurrentVarResults(sim) {
+  // Current VaR deliberately uses the same backend price, FX, forward-fill,
+  // weekend-removal and futures-unit path as Stress VaR. Correlations,
+  // volatility, EWMA, dividends, Sharpe and simulations remain unchanged.
+  const endDate = String(optState.asOf || stressToday()).slice(0,10);
+  const start = new Date(`${endDate}T00:00:00Z`);
+  start.setUTCDate(start.getUTCDate()-400); // ample lead-in for 250 weekday changes
+  const startDate = start.toISOString().slice(0,10);
+  const response = await fetch(OPT_STRESS_ENDPOINT,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({symbols:optState.assets,start_date:startDate,end_date:endDate})
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || response.statusText);
+
+  const base = stressVarResults(sim,data,{id:"current",label:"Current 250-day VaR",start:startDate,end:endDate});
+  if (base.allocationRows.length !== optState.assets.length) {
+    const omitted = optState.assets.filter(asset => !base.allocationRows.some(row => row.asset===asset));
+    throw new Error(`Canonical history omitted: ${omitted.join(", ")}.`);
+  }
+  const values = base.values.slice(-250);
+  if (values.length < 250) throw new Error(`Only ${values.length} complete current VaR observations were available.`);
+  const sorted = values.map(row=>row.pnl).sort((a,b)=>a-b);
+  const tailCount = Math.max(1,Math.ceil(values.length*.01));
+  const varPnl = sorted[tailCount-1];
+  const esPnl = sorted.slice(0,tailCount).reduce((sum,value)=>sum+value,0)/tailCount;
+  return {values,varPnl,esPnl,tailCount,allocation:shareAllocation(sim)};
 }
 
 function renderStressChart(result) {
@@ -1884,7 +1914,9 @@ async function runOptimization(varOnly=false, stressOnly=false) {
         setStatus(`Portfolio holdings loaded: ${optState.loadedPortfolio.label}.`);
         return;
       }
-      renderHistoricalVar(optState.loadedPortfolio);
+      setStatus("Loading canonical 250-day VaR history...");
+      const currentVar = await canonicalCurrentVarResults(optState.loadedPortfolio);
+      renderHistoricalVar(optState.loadedPortfolio,currentVar);
       document.getElementById("optAsOf").textContent =
         ` Risk data: ${optState.asOf || "latest"}; RF: ${optState.riskFreeAsOf || "latest"}.`;
       setStatus(`VaR calculated for ${optState.loadedPortfolio.label}.`);
@@ -1928,18 +1960,29 @@ async function runOptimization(varOnly=false, stressOnly=false) {
   }
 }
 
-function calculateVarForCurrentSelection() {
+async function calculateVarForCurrentSelection() {
   const requested = parseSymbols(document.getElementById("optSymbols").value);
   const sameAssets = requested.length === optState.assets.length &&
     requested.every((asset,index) => asset === optState.assets[index]);
 
   if (optState.inspected && sameAssets) {
-    renderHistoricalVar(optState.inspected);
-    const label = optState.inspected.id === "loaded"
-      ? optState.inspected.label
-      : `simulation #${optState.inspected.id}`;
-    setStatus(`VaR calculated for ${label}.`);
-    document.getElementById("optVarPanel").scrollIntoView({behavior:"smooth",block:"start"});
+    const button=document.getElementById("calculateVar");
+    button.disabled=true;
+    setStatus("Loading canonical 250-day VaR history...");
+    try {
+      const currentVar=await canonicalCurrentVarResults(optState.inspected);
+      renderHistoricalVar(optState.inspected,currentVar);
+      const label = optState.inspected.id === "loaded"
+        ? optState.inspected.label
+        : `simulation #${optState.inspected.id}`;
+      setStatus(`VaR calculated for ${label}.`);
+      document.getElementById("optVarPanel").scrollIntoView({behavior:"smooth",block:"start"});
+    } catch (err) {
+      console.error(err);
+      setStatus(`VaR calculation failed: ${err.message || err}`);
+    } finally {
+      button.disabled=false;
+    }
     return;
   }
   runOptimization(true);
