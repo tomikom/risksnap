@@ -2022,14 +2022,17 @@ async function initializeOptimizationPage() {
     `<option value="${escapeHtml(item.id)}">${escapeHtml(item.label)}</option>`
   ).join("");
   updateStressScenarioNote();
+  // Saved portfolios live in this browser and do not depend on the backend
+  // configuration service. Load them even when presets are temporarily
+  // unavailable.
+  refreshPortfolioSelector();
+  scheduleHoldingsRefresh(0);
   try {
     await loadOptimizationConfig();
   } catch (err) {
     setStatus(`RiskSnap configuration unavailable: ${err.message || err}`);
     return;
   }
-  refreshPortfolioSelector();
-  scheduleHoldingsRefresh(0);
 }
 initializeOptimizationPage();
 </script>
