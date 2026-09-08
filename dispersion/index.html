@@ -85,7 +85,8 @@ title: Portfolio Dispersion
 (() => {
   "use strict";
   const PORTFOLIOS_KEY = "RiskSnapSavedPortfolios";
-  const HISTORY_ENDPOINT = "https://surface-203178530029.northamerica-northeast2.run.app/stress_history";
+  const ASSET_HISTORY_ENDPOINT = "https://surface-203178530029.northamerica-northeast2.run.app/asset_history";
+  const FX_EQUITY_DEBUG_ENDPOINT = "https://surface-203178530029.northamerica-northeast2.run.app/fx_equity_debug";
   const COLORS = ["#3977c3","#dc7b32","#4f9b63","#a65a9c","#d2a62c","#4c9ea3","#c85555","#7586c4","#77a642","#9a6ac1","#b87949","#3f8f86","#d65f8a","#71834a","#5277a8","#ad6d62","#559eab","#9b8b36","#776aa7","#5f8d58"];
   const FUTURES = {
     "GOLD":{yahoo:"MGC=F",factor:10},"OIL":{yahoo:"CL=F",factor:1000},"CORN":{yahoo:"ZC=F",factor:5000,cents:true},
@@ -125,6 +126,16 @@ title: Portfolio Dispersion
     const timer=setTimeout(()=>controller.abort(),timeoutMs);
     try{
       const response=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(request),signal:controller.signal});
+      return await responseData(response,label);
+    }catch(err){
+      if(err?.name==="AbortError") throw new Error(`${label} took longer than ${Math.round(timeoutMs/1000)} seconds and was stopped.`);
+      throw err;
+    }finally{clearTimeout(timer);}
+  }
+  async function fetchUrlJson(url,label,controller,timeoutMs){
+    const timer=setTimeout(()=>controller.abort(),timeoutMs);
+    try{
+      const response=await fetch(url,{signal:controller.signal});
       return await responseData(response,label);
     }catch(err){
       if(err?.name==="AbortError") throw new Error(`${label} took longer than ${Math.round(timeoutMs/1000)} seconds and was stopped.`);
@@ -234,6 +245,14 @@ title: Portfolio Dispersion
       prices_usd[symbol]=dates.map(date=>byDate.get(date));
     });
     return {dates,prices_usd};
+  }
+  function assetHistoryPart(data,item){
+    const rows=Array.isArray(data.rows)?data.rows:[];
+    return {dates:rows.map(row=>row.date),prices_usd:{[item.requestSymbol]:rows.map(row=>Number(row.price))}};
+  }
+  function foreignHistoryPart(data,item){
+    const rows=Array.isArray(data.rows)?data.rows:[];
+    return {dates:rows.map(row=>row.date),prices_usd:{[item.requestSymbol]:rows.map(row=>Number(row.usd_price))}};
   }
   function point(cx,cy,r,deg){ const a=deg*Math.PI/180; return [cx+r*Math.sin(a),cy-r*Math.cos(a)]; }
   function sectorPath(cx,cy,r,start,end){ const a=point(cx,cy,r,start), b=point(cx,cy,r,end); return `M ${cx} ${cy} L ${a[0]} ${a[1]} A ${r} ${r} 0 0 1 ${b[0]} ${b[1]} Z`; }
@@ -350,13 +369,8 @@ title: Portfolio Dispersion
     $("calculate").disabled=true; $("status").textContent="Calculating dispersion…";
     try{
       stopHistory(); setHistoryEnabled(false);
-      const endDate=new Date(), requiredBusinessDays=lookback+250+10;
-      const statisticsStart=new Date(endDate);
-      statisticsStart.setUTCDate(statisticsStart.getUTCDate()-Math.ceil(requiredBusinessDays*7/5));
-      const requestStart=new Date(statisticsStart);
-      requestStart.setUTCDate(requestStart.getUTCDate()-14);
-      const iso=date=>date.toISOString().slice(0,10);
-      const request={symbols:assetMap.map(item=>item.requestSymbol),start_date:iso(requestStart),end_date:iso(endDate)};
+      const requiredBusinessDays=lookback+250+21;
+      const request={source:"canonical-risk-history-v2",symbols:assetMap.map(item=>item.requestSymbol),lookback};
       const cached=readCached(request);
       if(cached){
         try{
@@ -369,9 +383,17 @@ title: Portfolio Dispersion
         }catch(e){}
       }
       currentController=new AbortController();
-      const parts=await Promise.all(assetMap.map(item=>fetchJson(
-        HISTORY_ENDPOINT,{...request,symbols:[item.requestSymbol]},`${item.asset} price history`,currentController,CURRENT_TIMEOUT_MS
+      const rawHistories=await Promise.all(assetMap.map(item=>fetchJson(
+        ASSET_HISTORY_ENDPOINT,{symbol:item.requestSymbol,range:"3y"},`${item.asset} price history`,currentController,CURRENT_TIMEOUT_MS
       )));
+      const equityBatch=assetMap.filter(item=>!item.spec).map(item=>item.requestSymbol).join(",");
+      const parts=await Promise.all(rawHistories.map(async(data,index)=>{
+        const item=assetMap[index],currency=String(data.currency||"USD").toUpperCase();
+        if(currency==="USD"||item.spec) return assetHistoryPart(data,item);
+        const query=new URLSearchParams({symbol:item.requestSymbol,lookback:String(requiredBusinessDays),equities:equityBatch});
+        const fxData=await fetchUrlJson(`${FX_EQUITY_DEBUG_ENDPOINT}?${query}`,`${item.asset} cleaned USD history`,currentController,CURRENT_TIMEOUT_MS);
+        return foreignHistoryPart(fxData,item);
+      }));
       const data=combineHistories(parts,assetMap);
       if(requestId!==calculationId) return;
       writeCached(request,data);

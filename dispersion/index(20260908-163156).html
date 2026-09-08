@@ -85,7 +85,8 @@ title: Portfolio Dispersion
 (() => {
   "use strict";
   const PORTFOLIOS_KEY = "RiskSnapSavedPortfolios";
-  const HISTORY_ENDPOINT = "https://surface-203178530029.northamerica-northeast2.run.app/stress_history";
+  const ASSET_HISTORY_ENDPOINT = "https://surface-203178530029.northamerica-northeast2.run.app/asset_history";
+  const FX_EQUITY_DEBUG_ENDPOINT = "https://surface-203178530029.northamerica-northeast2.run.app/fx_equity_debug";
   const COLORS = ["#3977c3","#dc7b32","#4f9b63","#a65a9c","#d2a62c","#4c9ea3","#c85555","#7586c4","#77a642","#9a6ac1","#b87949","#3f8f86","#d65f8a","#71834a","#5277a8","#ad6d62","#559eab","#9b8b36","#776aa7","#5f8d58"];
   const FUTURES = {
     "GOLD":{yahoo:"MGC=F",factor:10},"OIL":{yahoo:"CL=F",factor:1000},"CORN":{yahoo:"ZC=F",factor:5000,cents:true},
@@ -125,6 +126,16 @@ title: Portfolio Dispersion
     const timer=setTimeout(()=>controller.abort(),timeoutMs);
     try{
       const response=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(request),signal:controller.signal});
+      return await responseData(response,label);
+    }catch(err){
+      if(err?.name==="AbortError") throw new Error(`${label} took longer than ${Math.round(timeoutMs/1000)} seconds and was stopped.`);
+      throw err;
+    }finally{clearTimeout(timer);}
+  }
+  async function fetchUrlJson(url,label,controller,timeoutMs){
+    const timer=setTimeout(()=>controller.abort(),timeoutMs);
+    try{
+      const response=await fetch(url,{signal:controller.signal});
       return await responseData(response,label);
     }catch(err){
       if(err?.name==="AbortError") throw new Error(`${label} took longer than ${Math.round(timeoutMs/1000)} seconds and was stopped.`);
@@ -204,7 +215,7 @@ title: Portfolio Dispersion
       const positions=assets.map((item,i)=>{
         const price=Number(series[item.requestSymbol][end]);
         const units=Number(saved.shares?.[item.asset])||0;
-        return {asset:item.asset,index:i,value:units*price*(item.spec?.factor||1),vol:volatility[i]};
+        return {asset:item.asset,index:i,price,units,contractFactor:item.spec?.factor||1,value:units*price*(item.spec?.factor||1),vol:volatility[i]};
       }).filter(position=>position.value>0&&Number.isFinite(position.vol));
       const total=positions.reduce((sum,position)=>sum+position.value,0);
       positions.forEach(position=>position.weight=position.value/total);
@@ -219,6 +230,29 @@ title: Portfolio Dispersion
       }});
     }
     return rows.slice(-250);
+  }
+  function combineHistories(parts,assetMap){
+    if(!parts.length) throw new Error("No price histories were returned.");
+    let commonDates=new Set(parts[0].dates||[]);
+    for(const part of parts.slice(1)) commonDates=new Set((part.dates||[]).filter(date=>commonDates.has(date)));
+    const dates=(parts[0].dates||[]).filter(date=>commonDates.has(date));
+    const prices_usd={};
+    parts.forEach((part,index)=>{
+      const symbol=assetMap[index].requestSymbol;
+      const source=part.prices_usd?.[symbol];
+      if(!Array.isArray(source)) throw new Error(`${symbol} returned no complete USD price history.`);
+      const byDate=new Map((part.dates||[]).map((date,i)=>[date,source[i]]));
+      prices_usd[symbol]=dates.map(date=>byDate.get(date));
+    });
+    return {dates,prices_usd};
+  }
+  function assetHistoryPart(data,item){
+    const rows=Array.isArray(data.rows)?data.rows:[];
+    return {dates:rows.map(row=>row.date),prices_usd:{[item.requestSymbol]:rows.map(row=>Number(row.price))}};
+  }
+  function foreignHistoryPart(data,item){
+    const rows=Array.isArray(data.rows)?data.rows:[];
+    return {dates:rows.map(row=>row.date),prices_usd:{[item.requestSymbol]:rows.map(row=>Number(row.usd_price))}};
   }
   function point(cx,cy,r,deg){ const a=deg*Math.PI/180; return [cx+r*Math.sin(a),cy-r*Math.cos(a)]; }
   function sectorPath(cx,cy,r,start,end){ const a=point(cx,cy,r,start), b=point(cx,cy,r,end); return `M ${cx} ${cy} L ${a[0]} ${a[1]} A ${r} ${r} 0 0 1 ${b[0]} ${b[1]} Z`; }
@@ -252,17 +286,27 @@ title: Portfolio Dispersion
       $("status").textContent="Calculate dispersion before downloading validation data.";
       return;
     }
+    const componentAssets=[...new Set(historyRows.flatMap(row=>row.result.positions.map(position=>position.asset)))];
+    const safeAsset=asset=>String(asset).replace(/[^A-Za-z0-9]+/g,"_").replace(/^_+|_+$/g,"");
     const headings=[
       "date","constituent_variance","portfolio_variance","dispersion_variance","dispersion",
       "portfolio_volatility","weighted_rms_constituent_volatility",
-      "variance_diversified_away","historical_dispersion_percentile"
+      "variance_diversified_away","historical_dispersion_percentile",
+      ...componentAssets.flatMap(asset=>[
+        `${safeAsset(asset)}_usd_price`,`${safeAsset(asset)}_units`,`${safeAsset(asset)}_contract_factor`,
+        `${safeAsset(asset)}_usd_position_value`,`${safeAsset(asset)}_weight`,`${safeAsset(asset)}_annualized_volatility`
+      ])
     ];
     const rows=historyRows.map(row=>{
       const result=row.result;
       return [
         row.date,result.constituentVariance,result.portfolioVariance,result.dispersionVariance,result.dispersion,
         result.portfolioVol,result.constituentVol,result.share,
-        historicalPercentile(result.dispersion)
+        historicalPercentile(result.dispersion),
+        ...componentAssets.flatMap(asset=>{
+          const position=result.positions.find(item=>item.asset===asset);
+          return position?[position.price,position.units,position.contractFactor,position.value,position.weight,position.vol]:["","","","","",""];
+        })
       ];
     });
     const csv=[headings,...rows].map(row=>row.map(value=>{
@@ -325,13 +369,8 @@ title: Portfolio Dispersion
     $("calculate").disabled=true; $("status").textContent="Calculating dispersion…";
     try{
       stopHistory(); setHistoryEnabled(false);
-      const endDate=new Date(), requiredBusinessDays=lookback+250+10;
-      const statisticsStart=new Date(endDate);
-      statisticsStart.setUTCDate(statisticsStart.getUTCDate()-Math.ceil(requiredBusinessDays*7/5));
-      const requestStart=new Date(statisticsStart);
-      requestStart.setUTCDate(requestStart.getUTCDate()-14);
-      const iso=date=>date.toISOString().slice(0,10);
-      const request={symbols:assetMap.map(item=>item.requestSymbol),start_date:iso(requestStart),end_date:iso(endDate)};
+      const requiredBusinessDays=lookback+250+21;
+      const request={source:"canonical-risk-history-v2",symbols:assetMap.map(item=>item.requestSymbol),lookback};
       const cached=readCached(request);
       if(cached){
         try{
@@ -344,7 +383,18 @@ title: Portfolio Dispersion
         }catch(e){}
       }
       currentController=new AbortController();
-      const data=await fetchJson(HISTORY_ENDPOINT,request,"Dispersion price history",currentController,CURRENT_TIMEOUT_MS);
+      const rawHistories=await Promise.all(assetMap.map(item=>fetchJson(
+        ASSET_HISTORY_ENDPOINT,{symbol:item.requestSymbol,range:"3y"},`${item.asset} price history`,currentController,CURRENT_TIMEOUT_MS
+      )));
+      const equityBatch=assetMap.filter(item=>!item.spec).map(item=>item.requestSymbol).join(",");
+      const parts=await Promise.all(rawHistories.map(async(data,index)=>{
+        const item=assetMap[index],currency=String(data.currency||"USD").toUpperCase();
+        if(currency==="USD"||item.spec) return assetHistoryPart(data,item);
+        const query=new URLSearchParams({symbol:item.requestSymbol,lookback:String(requiredBusinessDays),equities:equityBatch});
+        const fxData=await fetchUrlJson(`${FX_EQUITY_DEBUG_ENDPOINT}?${query}`,`${item.asset} cleaned USD history`,currentController,CURRENT_TIMEOUT_MS);
+        return foreignHistoryPart(fxData,item);
+      }));
+      const data=combineHistories(parts,assetMap);
       if(requestId!==calculationId) return;
       writeCached(request,data);
       historyRows=buildRollingRows(data,saved,assetMap,lookback);
@@ -368,7 +418,7 @@ title: Portfolio Dispersion
     return;
   }
   $("calculate").addEventListener("click",calculate);
-  $("portfolioSelect").addEventListener("change",()=>{invalidateHistory("Loading the selected portfolio’s dispersion…");if($("portfolioSelect").value)calculate();});
+  $("portfolioSelect").addEventListener("change",()=>invalidateHistory("Selection changed. Press Calculate Dispersion when ready."));
   $("lookback").addEventListener("change",()=>invalidateHistory());
   $("historySlider").addEventListener("input",()=>{stopHistory();renderHistory($("historySlider").value);});
   $("historyReset").addEventListener("click",()=>{stopHistory();renderHistory(0);});
