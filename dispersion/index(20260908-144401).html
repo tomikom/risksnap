@@ -104,6 +104,7 @@ title: Portfolio Dispersion
   let historyTimer=null;
   let historyContext=null;
   let calculationId=0;
+  let latestCalculation=null;
 
   function portfolios(){
     try { const p=JSON.parse(localStorage.getItem(PORTFOLIOS_KEY)||"{}"); return p&&typeof p==="object"&&!Array.isArray(p)?p:{}; }
@@ -230,6 +231,7 @@ title: Portfolio Dispersion
   }
   function invalidateHistory(message="Selection changed. Calculate dispersion to update the fan."){
     calculationId+=1;
+    latestCalculation=null;
     stopHistory();
     setHistoryEnabled(false);
     if(historyRows.length) $("historyControls").hidden=false;
@@ -255,22 +257,37 @@ title: Portfolio Dispersion
     try{
       stopHistory(); setHistoryEnabled(false);
       const request={lookback,fx_gold_oil:fx,yields:[],equities:equities.join(", ")};
-      const historyPromise=fetch(HISTORY_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...request,frames:250})});
       const latestResponse=await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(request)});
       const data=await responseData(latestResponse,"Current dispersion");
       if(requestId!==calculationId) return;
       const latestDate=String(data.date||data.as_of||data.ewma_as_of||"").slice(0,10), latestResult=analyse(data,saved);
-      historyRows=[{date:latestDate||"Latest",result:latestResult}];
+      historyRows=[];
       historyContext={name,lookback};
-      render(latestResult,name,lookback,latestDate,0);
+      latestCalculation={request,saved,name,lookback,latestDate,latestResult,requestId};
+      render(latestResult,name,lookback,latestDate,.5);
       $("badge").className="badge waiting";
       $("badge").textContent="Loading historical percentile";
       $("status").textContent="Current dispersion calculated. Loading history…";
-
-      const historyResponse=await historyPromise;
+      await loadHistory();
+    }catch(err){
+      if(historyRows.length&&historyContext){
+        $("status").textContent=`Current dispersion calculated, but history is unavailable: ${err.message||err}`;
+      }else{
+        $("status").textContent=`Unable to calculate: ${err.message||err}`;
+      }
+    }
+    finally{if(requestId===calculationId) $("calculate").disabled=false;}
+  }
+  async function loadHistory(){
+    const current=latestCalculation;
+    if(!current){$("status").textContent="Calculate current dispersion first.";return;}
+    const {request,saved,name,lookback,latestDate,latestResult,requestId}=current;
+    $("status").textContent="Loading dispersion history…";
+    try{
+      const historyResponse=await fetch(HISTORY_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...request,frames:250})});
       const historyData=await responseData(historyResponse,"Dispersion history");
-      if(requestId!==calculationId) return;
-      const commonAssets=historyData.assets||data.assets||[];
+      if(requestId!==calculationId||latestCalculation!==current) return;
+      const commonAssets=historyData.assets||[];
       historyRows=(historyData.frames||[]).map(frame=>{
         const normalized={...frame,assets:frame.assets||commonAssets,matrix:frame.matrix||frame.correlation||[],volatility:frame.volatility||[]};
         try{return {date:String(frame.date||"").slice(0,10),result:analyse(normalized,saved)};}catch(e){return null;}
@@ -282,13 +299,8 @@ title: Portfolio Dispersion
       setHistoryEnabled(true);
       $("status").textContent=`Dispersion history updated: ${historyRows.length} observations.`;
     }catch(err){
-      if(historyRows.length&&historyContext){
-        $("status").textContent=`Current dispersion calculated, but history is unavailable: ${err.message||err}`;
-      }else{
-        $("status").textContent=`Unable to calculate: ${err.message||err}`;
-      }
+      $("status").textContent=`Current dispersion is shown, but history is unavailable: ${err.message||err}`;
     }
-    finally{if(requestId===calculationId) $("calculate").disabled=false;}
   }
   $("calculate").addEventListener("click",calculate);
   $("portfolioSelect").addEventListener("change",()=>{invalidateHistory("Loading the selected portfolio’s dispersion…");if($("portfolioSelect").value)calculate();});
