@@ -220,6 +220,21 @@ title: Portfolio Dispersion
     }
     return rows.slice(-250);
   }
+  function combineHistories(parts,assetMap){
+    if(!parts.length) throw new Error("No price histories were returned.");
+    let commonDates=new Set(parts[0].dates||[]);
+    for(const part of parts.slice(1)) commonDates=new Set((part.dates||[]).filter(date=>commonDates.has(date)));
+    const dates=(parts[0].dates||[]).filter(date=>commonDates.has(date));
+    const prices_usd={};
+    parts.forEach((part,index)=>{
+      const symbol=assetMap[index].requestSymbol;
+      const source=part.prices_usd?.[symbol];
+      if(!Array.isArray(source)) throw new Error(`${symbol} returned no complete USD price history.`);
+      const byDate=new Map((part.dates||[]).map((date,i)=>[date,source[i]]));
+      prices_usd[symbol]=dates.map(date=>byDate.get(date));
+    });
+    return {dates,prices_usd};
+  }
   function point(cx,cy,r,deg){ const a=deg*Math.PI/180; return [cx+r*Math.sin(a),cy-r*Math.cos(a)]; }
   function sectorPath(cx,cy,r,start,end){ const a=point(cx,cy,r,start), b=point(cx,cy,r,end); return `M ${cx} ${cy} L ${a[0]} ${a[1]} A ${r} ${r} 0 0 1 ${b[0]} ${b[1]} Z`; }
   function render(result,name,lookback,date,percentile){
@@ -344,7 +359,10 @@ title: Portfolio Dispersion
         }catch(e){}
       }
       currentController=new AbortController();
-      const data=await fetchJson(HISTORY_ENDPOINT,request,"Dispersion price history",currentController,CURRENT_TIMEOUT_MS);
+      const parts=await Promise.all(assetMap.map(item=>fetchJson(
+        HISTORY_ENDPOINT,{...request,symbols:[item.requestSymbol]},`${item.asset} price history`,currentController,CURRENT_TIMEOUT_MS
+      )));
+      const data=combineHistories(parts,assetMap);
       if(requestId!==calculationId) return;
       writeCached(request,data);
       historyRows=buildRollingRows(data,saved,assetMap,lookback);
@@ -368,7 +386,7 @@ title: Portfolio Dispersion
     return;
   }
   $("calculate").addEventListener("click",calculate);
-  $("portfolioSelect").addEventListener("change",()=>{invalidateHistory("Loading the selected portfolio’s dispersion…");if($("portfolioSelect").value)calculate();});
+  $("portfolioSelect").addEventListener("change",()=>invalidateHistory("Selection changed. Press Calculate Dispersion when ready."));
   $("lookback").addEventListener("change",()=>invalidateHistory());
   $("historySlider").addEventListener("input",()=>{stopHistory();renderHistory($("historySlider").value);});
   $("historyReset").addEventListener("click",()=>{stopHistory();renderHistory(0);});
