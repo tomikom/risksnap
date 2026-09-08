@@ -62,6 +62,7 @@ title: Portfolio Dispersion
 .fan { width:100%; max-width:820px; min-height:295px; margin:2px auto 0; }
 .fan svg { display:block; width:100%; height:auto; }
 .history-controls { max-width:820px; margin:-2px auto 13px; padding:9px 11px; border:1px solid #d9dfd5; border-radius:7px; background:#f7f9f5; }
+.history-controls.is-pending { opacity:.48; filter:grayscale(1); }
 .history-buttons { display:flex; justify-content:center; gap:6px; flex-wrap:wrap; margin-bottom:7px; }
 .history-buttons button { padding:4px 10px; border:1px solid #9aa894; border-radius:5px; background:#fff; color:#315d22; cursor:pointer; }
 .history-buttons button:disabled { opacity:.45; cursor:default; }
@@ -102,6 +103,7 @@ title: Portfolio Dispersion
   let historyRows=[];
   let historyTimer=null;
   let historyContext=null;
+  let calculationId=0;
 
   function portfolios(){
     try { const p=JSON.parse(localStorage.getItem(PORTFOLIOS_KEY)||"{}"); return p&&typeof p==="object"&&!Array.isArray(p)?p:{}; }
@@ -211,6 +213,22 @@ title: Portfolio Dispersion
     $("historyDate").textContent=row.date||`Observation ${i+1}`;
   }
   function stopHistory(){ if(historyTimer){clearInterval(historyTimer);historyTimer=null;} $("historyPlay").disabled=false; $("historyPause").disabled=true; }
+  function setHistoryEnabled(enabled){
+    const controls=$("historyControls");
+    controls.classList.toggle("is-pending",!enabled);
+    $("historySlider").disabled=!enabled;
+    ["historyReset","historyPlay","historyPause","historyLatest"].forEach(id=>$(id).disabled=!enabled);
+    if(enabled) $("historyPause").disabled=true;
+  }
+  function invalidateHistory(message="Selection changed. Calculate dispersion to update the fan."){
+    calculationId+=1;
+    stopHistory();
+    setHistoryEnabled(false);
+    if(historyRows.length) $("historyControls").hidden=false;
+    $("badge").className="badge waiting";
+    $("badge").textContent="Waiting for new data";
+    $("status").textContent=message;
+  }
   function startHistory(){
     if(!historyRows.length) return;
     stopHistory(); $("historyPlay").disabled=true; $("historyPause").disabled=false;
@@ -221,18 +239,20 @@ title: Portfolio Dispersion
   async function calculate(){
     const name=$("portfolioSelect").value, saved=portfolios()[name], lookback=Number($("lookback").value);
     if(!saved){$("status").textContent="Select a saved portfolio first.";return;}
+    const requestId=++calculationId;
     const securities=(saved.securities||Object.keys(saved.shares||{})).filter(a=>Number(saved.shares?.[a])>0).slice(0,20);
     const fx=[], equities=[];
     securities.forEach(asset=>{const spec=futureSpec(asset); if(spec){const generic=Object.keys(FUTURES).find(k=>FUTURES[k]===spec&&!k.includes("=F"));fx.push(spec.name||generic||asset);}else equities.push(asset);});
     $("calculate").disabled=true; $("status").textContent="Calculating dispersion…";
     try{
-      stopHistory();
+      stopHistory(); setHistoryEnabled(false);
       const request={lookback,fx_gold_oil:fx,yields:[],equities:equities.join(", ")};
       const [latestResponse,historyResponse]=await Promise.all([
         fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(request)}),
         fetch(HISTORY_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...request,frames:250})})
       ]);
       const [data,historyData]=await Promise.all([latestResponse.json(),historyResponse.json()]);
+      if(requestId!==calculationId) return;
       if(!latestResponse.ok) throw new Error((data.messages||[latestResponse.statusText]).join(" "));
       if(!historyResponse.ok) throw new Error((historyData.messages||[historyResponse.statusText]).join(" "));
       const commonAssets=historyData.assets||data.assets||[];
@@ -246,12 +266,14 @@ title: Portfolio Dispersion
       $("historyControls").hidden=false;
       $("historySlider").min=0; $("historySlider").max=historyRows.length-1; $("historySlider").value=historyRows.length-1;
       renderHistory(historyRows.length-1);
+      setHistoryEnabled(true);
       $("status").textContent=`Dispersion history updated: ${historyRows.length} observations.`;
     }catch(err){$("status").textContent=`Unable to calculate: ${err.message||err}`;}
-    finally{$("calculate").disabled=false;}
+    finally{if(requestId===calculationId) $("calculate").disabled=false;}
   }
   $("calculate").addEventListener("click",calculate);
-  $("portfolioSelect").addEventListener("change",()=>{if($("portfolioSelect").value)calculate();});
+  $("portfolioSelect").addEventListener("change",()=>{invalidateHistory("Loading the selected portfolio’s dispersion…");if($("portfolioSelect").value)calculate();});
+  $("lookback").addEventListener("change",()=>invalidateHistory());
   $("historySlider").addEventListener("input",()=>{stopHistory();renderHistory($("historySlider").value);});
   $("historyReset").addEventListener("click",()=>{stopHistory();renderHistory(0);});
   $("historyPlay").addEventListener("click",startHistory);
