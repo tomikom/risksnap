@@ -204,7 +204,7 @@ title: Portfolio Dispersion
       const positions=assets.map((item,i)=>{
         const price=Number(series[item.requestSymbol][end]);
         const units=Number(saved.shares?.[item.asset])||0;
-        return {asset:item.asset,index:i,value:units*price*(item.spec?.factor||1),vol:volatility[i]};
+        return {asset:item.asset,index:i,price,units,contractFactor:item.spec?.factor||1,value:units*price*(item.spec?.factor||1),vol:volatility[i]};
       }).filter(position=>position.value>0&&Number.isFinite(position.vol));
       const total=positions.reduce((sum,position)=>sum+position.value,0);
       positions.forEach(position=>position.weight=position.value/total);
@@ -267,17 +267,27 @@ title: Portfolio Dispersion
       $("status").textContent="Calculate dispersion before downloading validation data.";
       return;
     }
+    const componentAssets=[...new Set(historyRows.flatMap(row=>row.result.positions.map(position=>position.asset)))];
+    const safeAsset=asset=>String(asset).replace(/[^A-Za-z0-9]+/g,"_").replace(/^_+|_+$/g,"");
     const headings=[
       "date","constituent_variance","portfolio_variance","dispersion_variance","dispersion",
       "portfolio_volatility","weighted_rms_constituent_volatility",
-      "variance_diversified_away","historical_dispersion_percentile"
+      "variance_diversified_away","historical_dispersion_percentile",
+      ...componentAssets.flatMap(asset=>[
+        `${safeAsset(asset)}_usd_price`,`${safeAsset(asset)}_units`,`${safeAsset(asset)}_contract_factor`,
+        `${safeAsset(asset)}_usd_position_value`,`${safeAsset(asset)}_weight`,`${safeAsset(asset)}_annualized_volatility`
+      ])
     ];
     const rows=historyRows.map(row=>{
       const result=row.result;
       return [
         row.date,result.constituentVariance,result.portfolioVariance,result.dispersionVariance,result.dispersion,
         result.portfolioVol,result.constituentVol,result.share,
-        historicalPercentile(result.dispersion)
+        historicalPercentile(result.dispersion),
+        ...componentAssets.flatMap(asset=>{
+          const position=result.positions.find(item=>item.asset===asset);
+          return position?[position.price,position.units,position.contractFactor,position.value,position.weight,position.vol]:["","","","","",""];
+        })
       ];
     });
     const csv=[headings,...rows].map(row=>row.map(value=>{
