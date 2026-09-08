@@ -39,7 +39,14 @@ title: Portfolio Dispersion
     </div>
     <div id="metrics" class="metrics"></div>
     <div id="legend" class="legend"></div>
-    <p class="note"><strong>How to read it:</strong> fan width shows the historical percentile of absolute dispersion for this portfolio. The percentage below is the actual annualized dispersion. Width is not a danger score; read it together with portfolio volatility and the variance diversified away.</p>
+    <div class="explanation">
+      <p><strong>Dispersion:</strong> √(weighted constituent variance − portfolio variance).</p>
+      <p><strong>Weighted constituent variance:</strong> Σ w<sub>i</sub>σ<sub>i</sub><sup>2</sup>, where w<sub>i</sub> is the holding’s EOD portfolio weight and σ<sub>i</sub> is its annualized volatility.</p>
+      <p><strong>Portfolio variance:</strong> Σ<sub>i</sub>Σ<sub>j</sub> w<sub>i</sub>w<sub>j</sub>σ<sub>i</sub>σ<sub>j</sub>ρ<sub>ij</sub>, where ρ<sub>ij</sub> is the correlation between holdings i and j. Portfolio volatility is the square root of portfolio variance.</p>
+      <p><strong>Historical percentile:</strong> the percentage of the 250 EOD dispersion observations that were at or below the selected reading. A 48th-percentile reading means approximately 48% were at or below it and approximately 52% were higher. The fan opens according to this percentile, not directly according to the numerical dispersion percentage.</p>
+      <p><strong>Wide versus narrow:</strong> a wide fan means dispersion is high relative to this portfolio’s 250-observation history. The weighted standalone variance of the holdings is substantially greater than the combined portfolio variance, indicating more offset among their movements. A narrow fan means the two variance measures are closer, indicating less offset; it can also occur when individual holding volatilities are relatively low. Fan width is not itself a measure of portfolio danger.</p>
+      <p><strong>Constituent variance diversified away:</strong> (weighted constituent variance − portfolio variance) ÷ weighted constituent variance. For May 28: (0.093663 − 0.027598) ÷ 0.093663 = 70.53%. It does not mean that 70.53% of potential losses has been eliminated.</p>
+    </div>
   </section>
 </div>
 
@@ -75,9 +82,11 @@ title: Portfolio Dispersion
 .metric-value { color:#222; font-size:21px; line-height:1.2; font-weight:700; font-variant-numeric:tabular-nums; }
 .metric-label { color:#666; font-size:11px; }
 .legend { display:flex; justify-content:center; gap:7px 14px; flex-wrap:wrap; color:#444; font-size:11px; }
+.legend-title { width:100%; color:#315d22; font-weight:700; text-align:center; }
 .key { display:inline-flex; align-items:center; gap:5px; }
 .swatch { width:9px; height:9px; border-radius:50%; }
-.note { max-width:820px; margin:11px auto 0; color:#666; font-size:12px; line-height:1.45; text-align:center; }
+.explanation { max-width:820px; margin:11px auto 0; padding-top:8px; border-top:1px solid #d6dfd1; color:#555; font-size:12px; line-height:1.45; }
+.explanation p { margin:4px 0; }
 @media(max-width:620px){.metrics{grid-template-columns:1fr;gap:4px}.fan{min-height:220px}.controls label,.controls select{width:100%}}
 </style>
 
@@ -274,7 +283,7 @@ title: Portfolio Dispersion
     $("badge").className="badge"; $("badge").textContent=`${label} • ${Math.round(rank*100)}th percentile`;
     $("asOf").textContent=`${name} • ${lookback}-day realized measure${date?` • EOD ${date}`:""}`;
     $("metrics").innerHTML=`<div class="metric"><div class="metric-value">${pct(result.dispersion)}</div><div class="metric-label">Dispersion • ${Math.round(rank*100)}th historical percentile</div></div><div class="metric"><div class="metric-value">${pct(result.portfolioVol)}</div><div class="metric-label">Portfolio volatility</div></div><div class="metric"><div class="metric-value">${pct(share)}</div><div class="metric-label">Constituent variance diversified away</div></div>`;
-    $("legend").innerHTML=result.positions.map((p,i)=>`<span class="key"><span class="swatch" style="background:${COLORS[i%COLORS.length]}"></span>${esc(p.asset)} ${pct(p.weight)}</span>`).join("");
+    $("legend").innerHTML=`<div class="legend-title">EOD portfolio weights</div>`+result.positions.map((p,i)=>`<span class="key"><span class="swatch" style="background:${COLORS[i%COLORS.length]}"></span>${esc(p.asset)} ${pct(p.weight)}</span>`).join("");
   }
   function historicalPercentile(value){
     const values=historyRows.map(row=>row.result.dispersion).filter(Number.isFinite).sort((a,b)=>a-b);
