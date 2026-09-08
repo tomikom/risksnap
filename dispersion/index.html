@@ -284,7 +284,7 @@ title: Portfolio Dispersion
     const {request,saved,name,lookback,latestDate,latestResult,requestId}=current;
     $("status").textContent="Loading dispersion history…";
     try{
-      const historyResponse=await fetch(HISTORY_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...request,frames:250})});
+      const historyResponse=await fetch(HISTORY_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...request,frames:250,compact:true})});
       const historyData=await responseData(historyResponse,"Dispersion history");
       if(requestId!==calculationId||latestCalculation!==current) return;
       const commonAssets=historyData.assets||[];

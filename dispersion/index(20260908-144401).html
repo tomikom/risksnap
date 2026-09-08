@@ -24,15 +24,15 @@ title: Portfolio Dispersion
       <div id="badge" class="badge waiting">Waiting for data</div>
     </header>
     <div id="fan" class="fan" role="img" aria-label="Portfolio dispersion fan"></div>
-    <div id="historyControls" class="history-controls" hidden>
+    <div id="historyControls" class="history-controls is-pending">
       <div class="history-buttons">
-        <button id="historyReset" type="button">Reset</button>
-        <button id="historyPlay" type="button">Play</button>
+        <button id="historyReset" type="button" disabled>Reset</button>
+        <button id="historyPlay" type="button" disabled>Play</button>
         <button id="historyPause" type="button" disabled>Pause</button>
-        <button id="historyLatest" type="button">Latest</button>
+        <button id="historyLatest" type="button" disabled>Latest</button>
       </div>
       <div class="history-slider-wrap">
-        <input id="historySlider" type="range" min="0" max="0" value="0" aria-label="Dispersion history date">
+        <input id="historySlider" type="range" min="0" max="0" value="0" disabled aria-label="Dispersion history date">
         <div id="historyDate" class="history-date">Latest</div>
       </div>
       <div id="historyChange" class="history-change"></div>
@@ -70,8 +70,8 @@ title: Portfolio Dispersion
 #historySlider { width:100%; accent-color:#59a83a; }
 .history-date { position:absolute; left:50%; bottom:0; transform:translateX(-50%); color:#315d22; font-size:11px; font-weight:700; white-space:nowrap; }
 .history-change { min-height:16px; margin-top:3px; color:#555; font-size:11px; text-align:center; }
-.metrics { display:grid; grid-template-columns:repeat(3,minmax(145px,1fr)); gap:10px; max-width:770px; margin:0 auto 11px; }
-.metric { padding:7px 4px 3px; border-top:2px solid #92ad85; text-align:center; }
+.metrics { display:grid; grid-template-columns:repeat(3,minmax(145px,1fr)); gap:10px; max-width:770px; margin:0 auto 11px; padding-top:7px; border-top:2px solid #92ad85; }
+.metric { padding:0 4px 3px; text-align:center; }
 .metric-value { color:#222; font-size:21px; line-height:1.2; font-weight:700; font-variant-numeric:tabular-nums; }
 .metric-label { color:#666; font-size:11px; }
 .legend { display:flex; justify-content:center; gap:7px 14px; flex-wrap:wrap; color:#444; font-size:11px; }
@@ -234,7 +234,7 @@ title: Portfolio Dispersion
     latestCalculation=null;
     stopHistory();
     setHistoryEnabled(false);
-    if(historyRows.length) $("historyControls").hidden=false;
+    $("historyControls").hidden=false;
     $("badge").className="badge waiting";
     $("badge").textContent="Waiting for new data";
     $("status").textContent=message;
@@ -284,7 +284,7 @@ title: Portfolio Dispersion
     const {request,saved,name,lookback,latestDate,latestResult,requestId}=current;
     $("status").textContent="Loading dispersion history…";
     try{
-      const historyResponse=await fetch(HISTORY_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...request,frames:250})});
+      const historyResponse=await fetch(HISTORY_ENDPOINT,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({...request,frames:250,compact:true})});
       const historyData=await responseData(historyResponse,"Dispersion history");
       if(requestId!==calculationId||latestCalculation!==current) return;
       const commonAssets=historyData.assets||[];
