@@ -24,21 +24,31 @@
         <!-- link rel="stylesheet" type="text/css" href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" -->
 			<link rel="stylesheet" type="text/css" href="/css/main.css">
 			<style>
+			  body > nav {
+			    background: #201ADE !important;
+			    border-radius: 4px;
+			  }
 			  nav .menufont,
 			  nav .dropbtn {
+			    color: #fff !important;
 			    font-weight: 400 !important;
 			  }
 			  /* Slightly strengthen the visible navigation row without enlarging
 			     the home icon or the Risk dropdown contents. */
 			  nav > ul > li:not(:first-child) > .menufont,
 			  nav > ul > li > .dropbtn {
-			    font-size: 17px !important;
+			    font-size: 14px !important;
 			    font-weight: 600 !important;
 			  }
+			  nav .dropbtn { background: transparent !important; }
+			  nav .dropdown-content { background: #fff !important; }
+			  nav .dropdown-content .menufont { color: #203247 !important; }
+			  nav > ul > li > a:hover,
+			  nav > ul > li > button:hover { background: #201ADE !important; }
 			  @media (max-width: 700px) {
 			    nav > ul > li:not(:first-child) > .menufont,
 			    nav > ul > li > .dropbtn {
-			      font-size: 14px !important;
+			      font-size: 12px !important;
 			    }
 			  }
 			</style>
@@ -53,7 +63,7 @@
         </script>
 	</head>
 	<body>
-        <img alt="risksnap-icon" src="/images/RiskSnap.png" style="width:125px; height:auto;" />
+        <img alt="risksnap-icon" src="/images/RiskSnap.png" />
 		<nav>
     		<ul>
                 <li><a class="menufont" href="/"><i class="fas fa-home fa-2x" aria-hidden="true"></i></a></li>
@@ -70,12 +80,12 @@
                 </li>
 				<li><a class="menufont" href="/products">Solutions</a></li>
 				<li><a class="menufont" href="/newsworthy">Newsworthy</a></li>
-				<li><a class="menufont" href="/rates_and_inflation">Rates and Inflation</a></li>
+				<li><a class="menufont" href="/rates_and_inflation">Rates, Inflation</a></li>
 				<li><a class="menufont" href="/foreignexchange">Foreign Exchange, Gold and Oil</a></li>
-				<li><a class="menufont" href="/equities">Equities and Futures</a></li>
+				<li><a class="menufont" href="/equities">Equities, Futures</a></li>
 				<li><a class="menufont" href="/correlations">Correlations, Portfolios</a></li>
 				<li><a class="menufont" href="/portfolio_optimization">Portfolio Optimization</a></li>
-				<li><a class="menufont" href="/dispersion">Dispersion Index</a></li>
+				<li><a class="menufont" href="/dispersion">Dispersion</a></li>
 				<li><a class="menufont" href="/stockselection">Stock Selection</a></li>
 				<li><a class="menufont" href="/options">Options</a></li>
 				<li><a class="menufont" href="/gamma">Gamma</a></li>
