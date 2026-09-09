@@ -31,7 +31,24 @@ layout: home-template
       <span class="rs-visual-banner__copy"><strong>Structured Products</strong><small>Non-linear payoffs</small></span>
     </a>
     </div>
-    <div class="rs-visual-banner__placeholder" aria-hidden="true"></div>
+
+    <div class="rs-visual-banner__tile">
+    <a class="rs-visual-banner__panel" href="/portfolio_optimization/#riskCalculationHeading" aria-label="Open Historical VaR and Expected Shortfall">
+      <img class="rs-visual-banner__image rs-visual-banner__var-image" src="./images/historical-var-chart.png" alt="Historical VaR chart showing daily portfolio mark-to-market changes, VaR threshold and Expected Shortfall">
+      <span class="rs-visual-banner__copy"><strong>Historical VaR</strong><small>Tail risk and ES</small></span>
+    </a>
+    </div>
+
+    <div class="rs-visual-banner__tile">
+    <a class="rs-visual-banner__panel" href="/dispersion/" aria-label="Open Dispersion Index">
+      <svg class="rs-visual-banner__image rs-visual-banner__dispersion-image" viewBox="0 0 180 112" role="img" aria-label="Dispersion fan">
+        <path d="M90 102 L24 24 A96 96 0 0 1 156 24 Z" fill="#dbeafe" stroke="#2f77d0" stroke-width="2"/>
+        <path d="M90 102 L38 15 M90 102 L64 7 M90 102 L90 4 M90 102 L116 7 M90 102 L142 15" fill="none" stroke="#2f77d0" stroke-width="2"/>
+        <circle cx="90" cy="102" r="5" fill="#244d84"/>
+      </svg>
+      <span class="rs-visual-banner__copy"><strong>Dispersion Index</strong><small>Constituent divergence</small></span>
+    </a>
+    </div>
   </nav>
 
 <!-- new -->
@@ -54,7 +71,7 @@ layout: home-template
 }
 .rs-visual-banner {
     display: grid !important;
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
     align-items: stretch;
     box-sizing: border-box;
     width: 100%;
@@ -124,6 +141,8 @@ layout: home-template
 .rs-visual-banner__correlations-image { object-position: center 45%; }
 .rs-visual-banner__surface-image { object-position: center 43%; }
 .rs-visual-banner__tree-image { object-fit: contain; padding: 4px 0; box-sizing: border-box; }
+.rs-visual-banner__var-image { object-fit: contain; object-position: center 54%; }
+.rs-visual-banner__dispersion-image { object-fit: contain; }
 .rs-visual-banner__copy {
     display: block;
     width: 100%;
@@ -139,7 +158,7 @@ layout: home-template
         width: 100% !important;
         min-width: 0 !important;
         min-height: 124px !important;
-        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
         border-radius: 5px;
     }
     .rs-visual-banner a.rs-visual-banner__panel {
@@ -242,7 +261,7 @@ table, th, td {
 	position: right;
 	width:0px;
 	-webkit-transition:width 0.3s linear 0s;
-	transition:width 0.3s linear 0s:
+	transition:width 0.3s linear 0s;
 	z-index:10;
 	}
 .pic:hover + .picbig{
@@ -268,6 +287,26 @@ table, th, td {
 }
 .concentration-pic:hover + .concentration-picbig {
     width: 700px;
+}
+.concentration-panel:has(.concentration-pic:hover) {
+    z-index: 1200;
+}
+
+/* Keep enlarged daily-thought images above the neighbouring columns. */
+.daily-thoughts-panel {
+    position: relative;
+    z-index: 30;
+    overflow: visible;
+}
+.daily-thoughts-panel .picbig {
+    position: relative;
+    z-index: 1100;
+}
+.world-news-link {
+    margin: 12px 0 8px;
+    text-align: left;
+    font-size: 17px;
+    font-weight: 700;
 }
 </style>
 <style>
@@ -562,7 +601,6 @@ div.c {
     <div class="rs-market-card__top"><div><p class="rs-market-card__place">${safe(market.place)}</p><h3>${safe(market.name)}</h3></div><span class="rs-market-card__state">Waiting</span></div>
     <p class="rs-market-card__level">&mdash;</p><p class="rs-market-card__change is-flat">Latest change unavailable</p>
     <div class="rs-market-card__details"><div><span class="rs-market-card__label">Exchange capitalization</span><span class="rs-market-card__detail">Exchange cap ${safe(market.size)}</span></div></div>
-    <p class="rs-market-card__access"><strong>Broker access:</strong> ${safe(market.access)}</p>
     <div class="rs-market-card__links"><button type="button" class="rs-market-card__chart" data-rs-chart-symbol="${safe(market.symbol)}" data-rs-chart-name="${safe(market.name)}">Chart</button><a class="rs-market-card__news" href="https://news.google.com/search?q=${encodeURIComponent(`${market.name} ${market.place} stock market`)}" target="_blank" rel="noopener noreferrer">Related news <span aria-hidden="true">↗</span></a></div>
   </article>`;
   grid.innerHTML = markets.map(card).join("");
@@ -706,6 +744,168 @@ div.c {
 
   window.addEventListener("risksnap-refresh-markets", loadForeignExchange);
   loadForeignExchange();
+})();
+</script>
+
+<section class="rs-portfolio-quotes" aria-labelledby="rs-portfolio-quotes-title">
+  <div class="rs-portfolio-quotes__heading">
+    <div>
+      <p class="rs-global-markets__eyebrow">Before the U.S. opening bell</p>
+      <h2 id="rs-portfolio-quotes-title">Portfolio and preset pre-market quotes</h2>
+    </div>
+    <div class="rs-portfolio-quotes__controls">
+      <label for="rs-portfolio-choice">Portfolio or preset</label>
+      <select id="rs-portfolio-choice"><option value="">Loading choices…</option></select>
+      <button id="rs-portfolio-load" type="button">Get quotes</button>
+    </div>
+  </div>
+  <p id="rs-portfolio-status" class="rs-global-markets__status" aria-live="polite">Choose a preset or a portfolio saved on the Correlations page.</p>
+  <div class="rs-portfolio-table-wrap" hidden>
+    <table class="rs-portfolio-table">
+      <thead><tr><th>Symbol</th><th>Shares</th><th>EOD</th><th>Pre-market</th><th>Pre-market change</th></tr></thead>
+      <tbody id="rs-portfolio-quote-rows"></tbody>
+    </table>
+  </div>
+  <p class="rs-global-markets__note">Pre-market applies to eligible U.S.-listed equities and funds. Foreign equities, foreign exchange, futures, indices and Bitcoin display N/A. Missing U.S. pre-market quotes remain unavailable until Yahoo publishes them.</p>
+</section>
+
+<p class="rs-broker-access-note"><strong>Broker access note:</strong> Markets commonly accessible to retail investors through international brokers include the United States (NYSE and Nasdaq), Canada (TMX), United Kingdom (London Stock Exchange), Germany (Deutsche Börse), Japan (JPX), Hong Kong (HKEX), Switzerland (SIX) and Australia (ASX). Mainland China is generally accessed through eligible Stock Connect securities; India, South Korea, Taiwan, Brazil, Dubai and Saudi Arabia may require participating brokers, registration, custody arrangements or local onboarding. Availability varies by jurisdiction, security and account type.</p>
+
+<style>
+.rs-portfolio-quotes { margin: 0 0 12px; padding: 12px; border: 1px solid #cddbec; border-radius: 10px; background: #f7faff; font-family: Arial, Helvetica, sans-serif; }
+.rs-portfolio-quotes__heading { display: flex; justify-content: space-between; align-items: end; gap: 14px; flex-wrap: wrap; }
+.rs-portfolio-quotes h2 { margin: 0; color: #244d84; font-size: 18px; }
+.rs-portfolio-quotes__controls { display: grid; grid-template-columns: auto minmax(190px, 280px) auto; align-items: center; gap: 7px; }
+.rs-portfolio-quotes__controls label { color: #475a70; font-size: 11px; font-weight: 700; }
+.rs-portfolio-quotes select, .rs-portfolio-quotes button { min-height: 31px; border: 1px solid #9bacc0; border-radius: 5px; background: #fff; }
+.rs-portfolio-quotes button { padding: 4px 10px; color: #fff; border-color: #2f5f9f; background: #2f5f9f; cursor: pointer; }
+.rs-portfolio-table-wrap { margin-top: 8px; overflow-x: auto; }
+.rs-portfolio-table { width: 100%; border-collapse: collapse; color: #26384c; font-size: 12px; }
+.rs-portfolio-table th, .rs-portfolio-table td { padding: 6px 8px; border-bottom: 1px solid #dce5ef; text-align: right; }
+.rs-portfolio-table th:first-child, .rs-portfolio-table td:first-child { text-align: left; font-weight: 700; }
+.rs-portfolio-change.is-up { color: #147a43; }
+.rs-portfolio-change.is-down { color: #b23b32; }
+.rs-broker-access-note { margin: 3px 4px 14px; color: #657386; font: 9px/1.35 Arial, Helvetica, sans-serif; }
+@media (max-width: 650px) {
+  .rs-portfolio-quotes__controls { width: 100%; grid-template-columns: 1fr auto; }
+  .rs-portfolio-quotes__controls label { grid-column: 1 / -1; }
+}
+</style>
+
+<script>
+(function () {
+  const endpoint = "https://surface-203178530029.northamerica-northeast2.run.app";
+  const choice = document.getElementById("rs-portfolio-choice");
+  const button = document.getElementById("rs-portfolio-load");
+  const status = document.getElementById("rs-portfolio-status");
+  const rows = document.getElementById("rs-portfolio-quote-rows");
+  const wrap = document.querySelector(".rs-portfolio-table-wrap");
+  if (!choice || !button || !status || !rows || !wrap) return;
+
+  const selections = new Map();
+  const cleanSymbol = value => String(value || "").trim().toUpperCase();
+  const finiteShares = value => Number.isFinite(Number(value)) ? Number(value) : null;
+  const normalizeHoldings = value => {
+    const source = value && typeof value === "object" && !Array.isArray(value)
+      ? (value.holdings || value.positions || value.assets || value.symbols || value.tickers || value)
+      : value;
+    if (Array.isArray(source)) return source.map(item => {
+      if (typeof item === "string") return { symbol: cleanSymbol(item), shares: null };
+      return { symbol: cleanSymbol(item.symbol || item.ticker || item.code), shares: finiteShares(item.shares ?? item.quantity ?? item.qty ?? item.weight) };
+    }).filter(item => item.symbol);
+    if (source && typeof source === "object") return Object.entries(source).map(([symbol, amount]) => {
+      const nested = amount && typeof amount === "object" ? amount : {};
+      return { symbol: cleanSymbol(nested.symbol || nested.ticker || symbol), shares: finiteShares(nested.shares ?? nested.quantity ?? nested.qty ?? amount) };
+    }).filter(item => item.symbol);
+    return [];
+  };
+  const addGroup = (label, raw, prefix) => {
+    if (!raw || typeof raw !== "object") return;
+    const group = document.createElement("optgroup");
+    group.label = label;
+    const entries = Array.isArray(raw)
+      ? raw.map((item, index) => [item && (item.name || item.label) || `Portfolio ${index + 1}`, item])
+      : Object.entries(raw);
+    entries.forEach(([name, value], index) => {
+      const holdings = normalizeHoldings(value);
+      if (!holdings.length) return;
+      const id = `${prefix}:${index}:${name}`;
+      selections.set(id, holdings);
+      const option = document.createElement("option");
+      option.value = id;
+      option.textContent = String((value && value.label) || name).replace(/_/g, " ");
+      group.appendChild(option);
+    });
+    if (group.children.length) choice.appendChild(group);
+  };
+  const savedPortfolios = () => {
+    const found = {};
+    try {
+      for (let index = 0; index < localStorage.length; index += 1) {
+        const key = localStorage.key(index);
+        if (!/portfolio/i.test(key || "")) continue;
+        let parsed;
+        try { parsed = JSON.parse(localStorage.getItem(key)); } catch (error) { continue; }
+        if (!parsed) continue;
+        if (Array.isArray(parsed)) parsed.forEach((item, itemIndex) => {
+          if (item && typeof item === "object") found[item.name || item.label || `${key} ${itemIndex + 1}`] = item;
+        });
+        else if (typeof parsed === "object") Object.assign(found, parsed.portfolios || parsed.savedPortfolios || parsed);
+      }
+    } catch (error) { /* local storage may be disabled */ }
+    return found;
+  };
+  const preMarketEligible = symbol => !symbol.startsWith("^") && !symbol.includes("=") && !symbol.endsWith("-USD") && !/\.[A-Z]{1,3}$/.test(symbol);
+  const money = value => Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+  const safe = value => String(value == null ? "" : value).replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" })[character]);
+
+  async function buildChoices() {
+    choice.innerHTML = '<option value="">Select…</option>';
+    try {
+      const response = await fetch(`${endpoint}/risksnap_config`);
+      const config = await response.json();
+      addGroup("RiskSnap presets", config.portfolio_presets || config.presets || config.PORTFOLIO_PRESETS, "preset");
+    } catch (error) { /* saved portfolios can still be shown */ }
+    addGroup("Saved portfolios", savedPortfolios(), "saved");
+    if (choice.options.length === 1) {
+      choice.options[0].textContent = "No portfolios found";
+      status.textContent = "Create and save portfolios on the Correlations page.";
+    }
+  }
+
+  async function loadQuotes() {
+    const holdings = selections.get(choice.value) || [];
+    if (!holdings.length) { status.textContent = "Select a portfolio or preset first."; return; }
+    button.disabled = true;
+    status.textContent = "Loading EOD and pre-market quotes…";
+    rows.innerHTML = "";
+    wrap.hidden = false;
+    try {
+      const response = await fetch(`${endpoint}/latest_prices`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ symbols: holdings.map(item => item.symbol) }) });
+      const payload = await response.json();
+      const eod = payload.eod_prices || payload.prices || {};
+      const pre = payload.pre_market_prices || {};
+      const changes = payload.pre_market_changes || {};
+      const percents = payload.pre_market_change_percents || {};
+      rows.innerHTML = holdings.map(item => {
+        const eligible = preMarketEligible(item.symbol);
+        const eodValue = Number(eod[item.symbol]);
+        const preValue = Number(pre[item.symbol]);
+        const change = Number(changes[item.symbol]);
+        const percent = Number(percents[item.symbol]);
+        const changeText = eligible && Number.isFinite(change) ? `${change > 0 ? "+" : ""}${money(change)} (${change > 0 ? "+" : ""}${percent.toFixed(2)}%)` : (eligible ? "—" : "N/A");
+        const changeClass = Number.isFinite(change) ? (change > 0 ? "is-up" : change < 0 ? "is-down" : "") : "";
+        return `<tr><td>${safe(item.symbol)}</td><td>${item.shares == null ? "—" : safe(item.shares)}</td><td>${Number.isFinite(eodValue) ? money(eodValue) : "—"}</td><td>${eligible ? (Number.isFinite(preValue) ? money(preValue) : "—") : "N/A"}</td><td class="rs-portfolio-change ${changeClass}">${changeText}</td></tr>`;
+      }).join("");
+      status.textContent = `Quotes requested ${payload.timestamp ? new Date(payload.timestamp).toLocaleString() : "now"}.`;
+    } catch (error) {
+      status.textContent = "Portfolio quotes are temporarily unavailable.";
+    } finally { button.disabled = false; }
+  }
+
+  button.addEventListener("click", loadQuotes);
+  choice.addEventListener("change", () => { if (choice.value) loadQuotes(); });
+  buildChoices();
 })();
 </script>
 
@@ -972,6 +1172,7 @@ div.c {
 })();
 </script>
 
+<p class="world-news-link"><a href="https://www.reuters.com/world/" target="_blank" rel="noopener noreferrer">Reuters World News <span aria-hidden="true">↗</span></a></p>
 <p>
 <div class="row">
 <div class="column left concentration-panel" style="background-color:#E5F1FF;">
@@ -983,11 +1184,17 @@ Unlike exchange-traded securities, these underlying positions are not continuous
 <p>The Treasury has now enlarged its long-term bond-buyback operations.. Scott Bessent, Treasury Secretary indicated a buy back possibly up to $1 Trillion of long term bonds?  Would the purchases be sufficient during a severe, concentrated sell-off? 31-Aug-2026</p>
 </div>
 
-<div class="column middle" style="background-color:#FFF9F5;">
+<div class="column middle daily-thoughts-panel" style="background-color:#FFF9F5;">
 <!--    <h2>Column 1</h2>-->
     <p>
 
 <h3 class="three-col-header">Thoughts on Risk for the day</h3>
+<p>Sep 6, 2026</p>
+<p><b>Sugar’s Energy Connection</b>
+<p><img class="pic" src="./marketriskfactors/images/Sugar 11.png" alt="Sugar 11" >
+	<img class="picbig" src="./marketriskfactors/images/Sugar 11.png" alt="Sugar 11" align="right" >Sugar 11
+<p>The current rise in oil prices to over $92 per barrel up from $56 per barrel in early 2026, asks what impact can this have on ethanol related commodities.   Sugar, for example was heading for a deficit early as April 25, one analytic firm revised its 2025-26 esttimate of a 1.66 million-tonne deficit to a 4.33-million-tonne deficit.  "Those are the kind of numbers that have in the past been associated with serious bull markets.." Sugarcane is extensively used to make ethanol, especially in Brazil.  Refer to Friedberg's Focus on Futures, May 27, 2026  "Sugar:  the bull takes shape".  Note that in Nov 1974 after the 1973 oil embargo, sugar reached a high of $.564 per lb.   Nearby sugar is  $.18 A look at Risksnaps correlations page shows positive correlations between Oil, Natural Gas, Sugar and Corn. 
+
 <p>Aug 26, 2026</p>
 <p><b>Treasury's Higher-Yield Trap</b>
 <p><img class="pic" src="./marketriskfactors/images/Yield_Trap.png" alt="Yield Trap" >
@@ -1058,6 +1265,7 @@ For historical volatilities refer to the diagonal on the correlations matrix at 
 
 <h1 class="three-col-header">VaR as a Risk Measure</h1>
 <p class="paragraph">Value at Risk (VaR) is one of the most popular tools used in risk management and is incorporated within the Basel Accord for banking supervision.  VaR is used by central counterparties (CCPs) for purposes of determining initial margin.  VaR and Expected Shortfall (ES) are standard measures used by traders for setting risk limits and can be used by investors, traders and risk managers both for preventing panic selling (or buying) in periods of high volatility, and also preventing overreaching in periods of low volatility.
+VaR calculations can be done on the <a href="/portfolio_optimization/">Portfolio Optimization</a> page.
 </p>
 
 </div> <!-- text-section -->
