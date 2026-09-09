@@ -788,26 +788,8 @@ div.c {
 
   const selections = new Map();
   const cleanSymbol = value => String(value || "").trim().toUpperCase();
-  const finiteShares = value => value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value)) ? Number(value) : null;
-  const listValues = value => {
-    if (Array.isArray(value)) return value;
-    if (typeof value === "string") return value.split(/[;,\n]+/).map(item => item.trim()).filter(Boolean);
-    return [];
-  };
+  const finiteShares = value => Number.isFinite(Number(value)) ? Number(value) : null;
   const normalizeHoldings = value => {
-    if (value && typeof value === "object" && !Array.isArray(value)) {
-      const securities = listValues(value.SECURITIES ?? value.securities);
-      const shares = listValues(value.SHARES ?? value.shares);
-      if (securities.length) return securities.map((security, index) => {
-        if (security && typeof security === "object") {
-          return {
-            symbol: cleanSymbol(security.symbol || security.ticker || security.code),
-            shares: finiteShares(security.shares ?? security.quantity ?? security.qty ?? shares[index])
-          };
-        }
-        return { symbol: cleanSymbol(security), shares: finiteShares(shares[index]) };
-      }).filter(item => item.symbol);
-    }
     const source = value && typeof value === "object" && !Array.isArray(value)
       ? (value.holdings || value.positions || value.assets || value.symbols || value.tickers || value)
       : value;
@@ -815,9 +797,7 @@ div.c {
       if (typeof item === "string") return { symbol: cleanSymbol(item), shares: null };
       return { symbol: cleanSymbol(item.symbol || item.ticker || item.code), shares: finiteShares(item.shares ?? item.quantity ?? item.qty ?? item.weight) };
     }).filter(item => item.symbol);
-    if (source && typeof source === "object") return Object.entries(source).filter(([symbol]) =>
-      !/^(name|label|securities|shares|bookvalue|book_value|cash)$/i.test(symbol)
-    ).map(([symbol, amount]) => {
+    if (source && typeof source === "object") return Object.entries(source).map(([symbol, amount]) => {
       const nested = amount && typeof amount === "object" ? amount : {};
       return { symbol: cleanSymbol(nested.symbol || nested.ticker || symbol), shares: finiteShares(nested.shares ?? nested.quantity ?? nested.qty ?? amount) };
     }).filter(item => item.symbol);
