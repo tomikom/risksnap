@@ -2,41 +2,57 @@
 layout: home-template
 ---
 <div class ="image-section rs-hero-section">
-  <div class="rs-skyline-hero" role="img" aria-label="Toronto waterfront skyline">
-    <img src="./images/toronto-skyline-wide.png" alt="Toronto waterfront skyline">
-    <div class="rs-skyline-hero__title">RiskSnap.com</div>
-  </div>
+  <!-- One stationary banner. Each illustration is an independent link. -->
+  <nav class="rs-visual-banner" aria-label="RiskSnap analytical tools">
+    <div class="rs-visual-banner__tile">
+    <a class="rs-visual-banner__panel" href="/correlations/" aria-label="Open Correlations">
+      <img class="rs-visual-banner__image rs-visual-banner__correlations-image" src="./images/Correlations.png" alt="RiskSnap correlation matrix">
+      <span class="rs-visual-banner__copy"><strong>Correlations</strong><small>Diversification</small></span>
+    </a>
+    </div>
+
+    <div class="rs-visual-banner__tile">
+    <a class="rs-visual-banner__panel" href="/surface/" aria-label="Open Volatility Surface">
+      <img class="rs-visual-banner__image rs-visual-banner__surface-image" src="./images/Surface_Equity_SPY.png" alt="RiskSnap SPY volatility surface">
+      <span class="rs-visual-banner__copy"><strong>Volatility Surface</strong><small>Market-implied risk</small></span>
+    </a>
+    </div>
+
+    <div class="rs-visual-banner__tile">
+    <a class="rs-visual-banner__panel" href="/portfolio_optimization/" aria-label="Open Portfolio Optimization">
+      <img class="rs-visual-banner__image rs-visual-banner__portfolio-image" src="./images/portfolio-optimization.png" alt="RiskSnap simulated portfolios risk versus total return chart">
+      <span class="rs-visual-banner__copy"><strong>Portfolio Optimization</strong><small>Allocations and risk</small></span>
+    </a>
+    </div>
+
+    <div class="rs-visual-banner__tile">
+    <a class="rs-visual-banner__panel rs-visual-banner__tree" href="/structuredproducts/" aria-label="Open Structured Products">
+      <img class="rs-visual-banner__image rs-visual-banner__tree-image" src="./images/quadrinomial-tree-transparent.png" alt="Transparent quadrinomial structured-products tree">
+      <span class="rs-visual-banner__copy"><strong>Structured Products</strong><small>Non-linear payoffs</small></span>
+    </a>
+    </div>
+
+    <div class="rs-visual-banner__tile">
+    <a class="rs-visual-banner__panel" href="/portfolio_optimization/#riskCalculationHeading" aria-label="Open Historical VaR and Expected Shortfall">
+      <img class="rs-visual-banner__image rs-visual-banner__var-image" src="./images/historical-var-chart.png" alt="Historical VaR chart showing daily portfolio mark-to-market changes, VaR threshold and Expected Shortfall">
+      <span class="rs-visual-banner__copy"><strong>Historical VaR</strong><small>Tail risk and ES</small></span>
+    </a>
+    </div>
+
+    <div class="rs-visual-banner__tile">
+    <a class="rs-visual-banner__panel" href="/dispersion/" aria-label="Open Dispersion Index">
+      <svg class="rs-visual-banner__image rs-visual-banner__dispersion-image" viewBox="0 0 180 112" role="img" aria-label="Dispersion fan">
+        <path d="M90 102 L24 24 A96 96 0 0 1 156 24 Z" fill="#dbeafe" stroke="#2f77d0" stroke-width="2"/>
+        <path d="M90 102 L38 15 M90 102 L64 7 M90 102 L90 4 M90 102 L116 7 M90 102 L142 15" fill="none" stroke="#2f77d0" stroke-width="2"/>
+        <circle cx="90" cy="102" r="5" fill="#244d84"/>
+      </svg>
+      <span class="rs-visual-banner__copy"><strong>Dispersion Index</strong><small>Constituent divergence</small></span>
+    </a>
+    </div>
+  </nav>
 
 <!-- new -->
 <style>
-
-.rs-skyline-hero {
-    position: relative;
-    width: 100vw;
-    margin-left: calc(50% - 50vw);
-    overflow: hidden;
-    background: #4385b2;
-}
-.rs-skyline-hero img {
-    display: block;
-    width: 100%;
-    height: clamp(230px, 34vw, 500px);
-    object-fit: cover;
-    object-position: center center;
-}
-.rs-skyline-hero__title {
-    position: absolute;
-    top: 18px;
-    left: 0;
-    width: 100%;
-    color: #fff;
-    text-align: center;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: clamp(14px, 1.3vw, 20px);
-    font-weight: 600;
-    letter-spacing: .02em;
-    text-shadow: 0 2px 7px rgba(0,0,0,.55);
-}
 
 .rs-hero-section {
     display: block !important;
