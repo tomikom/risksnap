@@ -1014,7 +1014,7 @@ div.c {
       <select id="rs-portfolio-choice"><option value="">Loading choices…</option></select>
       <button id="rs-portfolio-load" type="button">Get quotes</button>
     </div>
-    <button id="rs-portfolio-close" class="rs-portfolio-close" type="button" aria-label="Close pre-market quotes">Close</button>
+    <button id="rs-portfolio-close" class="rs-portfolio-close" type="button" aria-label="Close portfolio dropdown list">Close list</button>
   </div>
   <p id="rs-portfolio-status" class="rs-global-markets__status" aria-live="polite">Choose a preset or a portfolio saved on the Correlations page.</p>
   <p class="rs-portfolio-create-note">A portfolio can be created in <a href="/portfolio_optimization/">Portfolio Analytics</a>. It is saved only in the user&rsquo;s browser cache and is not retained by RiskSnap.com.</p>
@@ -1064,7 +1064,6 @@ div.c {
   const choice = document.getElementById("rs-portfolio-choice");
   const button = document.getElementById("rs-portfolio-load");
   const closeButton = document.getElementById("rs-portfolio-close");
-  const panel = document.querySelector(".rs-portfolio-quotes");
   const status = document.getElementById("rs-portfolio-status");
   const rows = document.getElementById("rs-portfolio-quote-rows");
   const wrap = document.querySelector(".rs-portfolio-table-wrap");
@@ -1229,7 +1228,11 @@ div.c {
 
   button.addEventListener("click", loadQuotes);
   choice.addEventListener("change", () => { if (choice.value) loadQuotes(); });
-  if (closeButton && panel) closeButton.addEventListener("click", () => { panel.hidden = true; });
+  if (closeButton) closeButton.addEventListener("click", () => {
+    choice.size = 1;
+    choice.blur();
+    closeButton.focus();
+  });
   window.addEventListener("pageshow", buildChoices);
   document.addEventListener("visibilitychange", () => { if (!document.hidden) buildChoices(); });
   buildChoices();
