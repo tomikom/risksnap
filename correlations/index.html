@@ -443,6 +443,17 @@ h1 { color: white; text-align: center; background-color: #3A5FCD; }
 .matrix-history-header { margin-bottom: 4px; }
 #matrixHistorySlider { width: 100%; }
 
+/* On phones the sticky panel covers the lower correlation bubbles.
+   Keep it in the normal page flow beneath the matrix instead. */
+@media (max-width: 800px) {
+  .matrix-history-panel {
+    position: static;
+    bottom: auto;
+    z-index: auto;
+    box-shadow: none;
+  }
+}
+
 
 .portfolio-panel { background:#fff; border:1px solid #ddd; border-radius:8px; margin:14px 0; padding:0 14px 12px 14px; scroll-margin-top:12px; }
 .world-index-charts { margin:0 0 12px; padding:9px 10px; border:1px solid #d9e2f4; border-radius:6px; background:#f7f9fd; }
