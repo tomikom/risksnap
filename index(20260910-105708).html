@@ -3,9 +3,13 @@ layout: home-template
 ---
 <div class ="image-section rs-hero-section">
   <a class="rs-correlation-hero" href="/correlations/" aria-label="Explore RiskSnap correlations">
-    <div class="rs-correlation-hero__title">RiskSnap.com</div>
-    <div class="rs-correlation-hero__subtitle">Correlations in motion</div>
-    <svg class="rs-correlation-hero__graphic" viewBox="0 0 1200 430" role="img" aria-labelledby="rsCorrHeroTitle rsCorrHeroDesc" preserveAspectRatio="xMidYMid meet">
+    <div class="rs-correlation-hero__copy">
+      <div class="rs-correlation-hero__title">RiskSnap.com</div>
+      <div class="rs-correlation-hero__kicker">MARKET RISK, MADE VISIBLE</div>
+      <div class="rs-correlation-hero__text">Explore correlations, portfolio risk and market dispersion across assets and through time.</div>
+      <div class="rs-correlation-hero__prompt">Explore Correlations <span aria-hidden="true">›</span></div>
+    </div>
+    <svg class="rs-correlation-hero__graphic" viewBox="180 0 930 430" role="img" aria-labelledby="rsCorrHeroTitle rsCorrHeroDesc" preserveAspectRatio="xMidYMid meet">
       <title id="rsCorrHeroTitle">Animated correlation bubble matrix</title>
       <desc id="rsCorrHeroDesc">Blue and purple bubbles represent positive correlations; coral bubbles represent negative correlations. Bubble size changes gently over time.</desc>
       <defs>
@@ -66,42 +70,56 @@ layout: home-template
 
 .rs-correlation-hero {
     position: relative;
-    display: block;
+    display: grid;
+    grid-template-columns: minmax(310px, .9fr) minmax(430px, 1.1fr);
+    align-items: stretch;
     width: 100vw;
     margin-left: calc(50% - 50vw);
     overflow: hidden;
-    background: #eaf2ff;
-    color: #203247;
+    background: #365f82;
+    color: #fff;
     text-decoration: none;
 }
 .rs-correlation-hero__graphic {
     display: block;
     width: 100%;
-    height: clamp(230px, 34vw, 500px);
+    height: clamp(230px, 27vw, 390px);
+    background: #eaf2ff;
+}
+.rs-correlation-hero__copy {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    min-width: 0;
+    padding: clamp(28px, 4vw, 60px) clamp(30px, 6vw, 100px);
 }
 .rs-correlation-hero__title {
-    position: absolute;
-    z-index: 2;
-    top: 20px;
-    left: 0;
-    width: 100%;
-    color: #243b66;
-    text-align: center;
+    color: #fff;
     font-family: Arial, Helvetica, sans-serif;
-    font-size: clamp(14px, 1.3vw, 20px);
-    font-weight: 600;
-    letter-spacing: .02em;
+    font-size: clamp(22px, 2vw, 32px);
+    font-weight: 700;
+    letter-spacing: -.015em;
 }
-.rs-correlation-hero__subtitle {
-    position: absolute;
-    z-index: 2;
-    top: 48px;
-    left: 0;
-    width: 100%;
-    color: #536987;
-    text-align: center;
-    font: 400 clamp(12px, 1vw, 15px)/1.3 Arial, Helvetica, sans-serif;
-    letter-spacing: .04em;
+.rs-correlation-hero__kicker {
+    margin-top: 13px;
+    color: #fff;
+    font: 700 clamp(12px, 1.15vw, 16px)/1.3 Arial, Helvetica, sans-serif;
+    letter-spacing: .055em;
+}
+.rs-correlation-hero__text {
+    max-width: 560px;
+    margin-top: 16px;
+    color: #f3f7fb;
+    font: 400 clamp(16px, 1.45vw, 21px)/1.48 Arial, Helvetica, sans-serif;
+}
+.rs-correlation-hero__prompt {
+    align-self: flex-start;
+    margin-top: 22px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid rgba(255,255,255,.75);
+    color: #fff;
+    font: 600 14px/1.3 Arial, Helvetica, sans-serif;
 }
 .rs-correlation-hero__grid path {
     fill: none;
@@ -141,11 +159,15 @@ layout: home-template
     50% { transform: scale(1.08); opacity: .78; }
 }
 .rs-correlation-hero:hover .rs-correlation-hero__title,
-.rs-correlation-hero:focus-visible .rs-correlation-hero__title { color: #3A5FCD; }
+.rs-correlation-hero:focus-visible .rs-correlation-hero__title { color: #fff; }
+.rs-correlation-hero:hover .rs-correlation-hero__prompt { border-bottom-color: #fff; }
 .rs-correlation-hero:focus-visible { outline: 3px solid #3A5FCD; outline-offset: -3px; }
 @media (max-width: 700px) {
-    .rs-correlation-hero__graphic { width: 145%; margin-left: -28%; }
-    .rs-correlation-hero__subtitle { top: 43px; }
+    .rs-correlation-hero { grid-template-columns: 1fr; }
+    .rs-correlation-hero__copy { padding: 26px 24px 24px; }
+    .rs-correlation-hero__text { max-width: none; }
+    .rs-correlation-hero__prompt { margin-top: 16px; }
+    .rs-correlation-hero__graphic { height: 220px; }
 }
 @media (prefers-reduced-motion: reduce) {
     .rs-corr-bubble { animation: none !important; opacity: .68; }

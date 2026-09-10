@@ -2,8 +2,7 @@
 layout: home-template
 ---
 <div class ="image-section rs-hero-section">
-  <div class="rs-feature-carousel" aria-roledescription="carousel" aria-label="RiskSnap analytics highlights">
-  <a class="rs-correlation-hero rs-feature-slide is-active" href="/correlations/" aria-label="Explore RiskSnap correlations" aria-hidden="false">
+  <a class="rs-correlation-hero" href="/correlations/" aria-label="Explore RiskSnap correlations">
     <div class="rs-correlation-hero__copy">
       <div class="rs-correlation-hero__title">RiskSnap.com</div>
       <div class="rs-correlation-hero__kicker">MARKET RISK, MADE VISIBLE</div>
@@ -66,96 +65,6 @@ layout: home-template
     </svg>
   </a>
 
-  <a class="rs-correlation-hero rs-feature-slide rs-portfolio-hero" href="/portfolio_optimization/" aria-label="Explore RiskSnap portfolio market value" aria-hidden="true" tabindex="-1">
-    <div class="rs-correlation-hero__copy">
-      <div class="rs-correlation-hero__title">Portfolio Market Value</div>
-      <div class="rs-correlation-hero__kicker">SEE THE PATH, NOT JUST THE RESULT</div>
-      <div class="rs-correlation-hero__text">Track market value through time and see the peak, trough and recovery that shape portfolio risk.</div>
-      <div class="rs-correlation-hero__prompt">Explore Portfolio Optimization <span aria-hidden="true">›</span></div>
-    </div>
-    <svg class="rs-correlation-hero__graphic rs-portfolio-hero__graphic" viewBox="0 0 930 430" role="img" aria-labelledby="rsPortfolioHeroTitle rsPortfolioHeroDesc" preserveAspectRatio="xMidYMid meet">
-      <title id="rsPortfolioHeroTitle">Portfolio market value with peak and trough</title>
-      <desc id="rsPortfolioHeroDesc">A portfolio market value line rises to a marked peak, falls to a marked trough, and then recovers.</desc>
-      <defs>
-        <linearGradient id="rsPortfolioHeroBg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#fbfdff"/>
-          <stop offset="100%" stop-color="#e8f0fb"/>
-        </linearGradient>
-        <filter id="rsPortfolioPointShadow" x="-50%" y="-50%" width="200%" height="200%">
-          <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#23395d" flood-opacity=".18"/>
-        </filter>
-      </defs>
-      <rect width="930" height="430" fill="url(#rsPortfolioHeroBg)"/>
-      <g class="rs-portfolio-hero__grid" aria-hidden="true">
-        <path d="M78 86H884M78 166H884M78 246H884M78 326H884"/>
-        <path d="M78 64V350M78 350H884"/>
-      </g>
-      <g class="rs-portfolio-hero__axis" aria-hidden="true">
-        <text x="65" y="91">$225K</text><text x="65" y="171">$205K</text>
-        <text x="65" y="251">$185K</text><text x="65" y="331">$165K</text>
-        <text x="78" y="382">Sep 25</text><text x="481" y="382">Mar 18</text><text x="884" y="382">Sep 9</text>
-      </g>
-      <path class="rs-portfolio-hero__line" d="M78 321 L112 334 L146 317 L180 329 L214 309 L248 313 L282 292 L316 267 L350 235 L384 201 L418 219 L452 186 L486 132 L520 164 L554 101 L588 76 L622 125 L656 110 L690 130 L724 176 L758 160 L792 169 L826 151 L858 158 L884 142"/>
-      <g filter="url(#rsPortfolioPointShadow)" aria-hidden="true">
-        <circle class="rs-portfolio-hero__peak" cx="588" cy="76" r="11"/>
-        <circle class="rs-portfolio-hero__trough" cx="724" cy="176" r="11"/>
-        <circle class="rs-portfolio-hero__current" cx="884" cy="142" r="7"/>
-      </g>
-      <g class="rs-portfolio-hero__annotations" aria-hidden="true">
-        <text class="is-peak" x="588" y="48">Peak $221,649</text>
-        <text class="is-trough" x="724" y="211">Trough $204,128</text>
-      </g>
-      <text class="rs-portfolio-hero__note" x="82" y="40">Illustrative Portfolio Market Value (EOD) · 250 observations</text>
-    </svg>
-  </a>
-
-  <div class="rs-feature-carousel__controls" aria-label="Choose featured view">
-    <button class="rs-feature-carousel__dot is-active" type="button" aria-label="Show correlations" aria-pressed="true"></button>
-    <button class="rs-feature-carousel__dot" type="button" aria-label="Show portfolio market value" aria-pressed="false"></button>
-  </div>
-  </div>
-
-  <script>
-  (function () {
-    var carousel = document.querySelector('.rs-feature-carousel');
-    if (!carousel) return;
-    var slides = Array.prototype.slice.call(carousel.querySelectorAll('.rs-feature-slide'));
-    var dots = Array.prototype.slice.call(carousel.querySelectorAll('.rs-feature-carousel__dot'));
-    var current = 0;
-    var timer;
-    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    function show(index) {
-      current = index;
-      slides.forEach(function (slide, i) {
-        var active = i === current;
-        slide.classList.toggle('is-active', active);
-        slide.setAttribute('aria-hidden', active ? 'false' : 'true');
-        slide.tabIndex = active ? 0 : -1;
-      });
-      dots.forEach(function (dot, i) {
-        var active = i === current;
-        dot.classList.toggle('is-active', active);
-        dot.setAttribute('aria-pressed', active ? 'true' : 'false');
-      });
-    }
-    function start() {
-      if (reduceMotion) return;
-      window.clearInterval(timer);
-      timer = window.setInterval(function () { show((current + 1) % slides.length); }, 7000);
-    }
-    dots.forEach(function (dot, i) {
-      dot.addEventListener('click', function () { show(i); start(); });
-    });
-    carousel.addEventListener('mouseenter', function () { window.clearInterval(timer); });
-    carousel.addEventListener('mouseleave', start);
-    carousel.addEventListener('focusin', function () { window.clearInterval(timer); });
-    carousel.addEventListener('focusout', start);
-    show(0);
-    start();
-  }());
-  </script>
-
 <!-- new -->
 <style>
 
@@ -171,50 +80,6 @@ layout: home-template
     color: #fff;
     text-decoration: none;
 }
-.rs-feature-carousel {
-    position: relative;
-    width: 100vw;
-    min-height: clamp(220px, 22vw, 320px);
-    margin-left: calc(50% - 50vw);
-    overflow: hidden;
-    background: #365f82;
-}
-.rs-feature-slide {
-    margin-left: 0;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transition: opacity .8s ease, visibility 0s linear .8s;
-}
-.rs-feature-slide:not(.is-active) { position: absolute; inset: 0; }
-.rs-feature-slide.is-active {
-    position: relative;
-    z-index: 1;
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transition-delay: 0s;
-}
-.rs-feature-carousel__controls {
-    position: absolute;
-    z-index: 3;
-    left: 28%;
-    bottom: 12px;
-    display: flex;
-    gap: 9px;
-    transform: translateX(-50%);
-}
-.rs-feature-carousel__dot {
-    width: 10px;
-    height: 10px;
-    padding: 0;
-    border: 1px solid rgba(255,255,255,.9);
-    border-radius: 50%;
-    background: rgba(255,255,255,.35);
-    cursor: pointer;
-}
-.rs-feature-carousel__dot.is-active { background: #fff; }
-.rs-feature-carousel__dot:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 .rs-correlation-hero__graphic {
     display: block;
     width: 100%;
@@ -279,34 +144,33 @@ layout: home-template
 .rs-corr-bubble--blue { fill: #3478c9; stroke: #245fa5; }
 .rs-corr-bubble--purple { fill: #7057b8; stroke: #584198; }
 .rs-corr-bubble--coral { fill: #e57a6f; stroke: #c75f55; }
-.rs-portfolio-hero { background: #294f73; }
-.rs-portfolio-hero__grid path { fill: none; stroke: #9eb3cf; stroke-width: 1; opacity: .4; }
-.rs-portfolio-hero__axis text { fill: #617186; font: 13px Arial, Helvetica, sans-serif; }
-.rs-portfolio-hero__axis text:nth-child(-n+4) { text-anchor: end; }
-.rs-portfolio-hero__axis text:nth-child(n+5) { text-anchor: middle; }
-.rs-portfolio-hero__line { fill: none; stroke: #3569c8; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
-.rs-portfolio-hero__peak { fill: #29965b; stroke: #fff; stroke-width: 3; }
-.rs-portfolio-hero__trough { fill: #c33c2e; stroke: #fff; stroke-width: 3; }
-.rs-portfolio-hero__current { fill: #3569c8; stroke: #fff; stroke-width: 2; }
-.rs-portfolio-hero__annotations text { font: 700 14px Arial, Helvetica, sans-serif; text-anchor: middle; }
-.rs-portfolio-hero__annotations .is-peak { fill: #24834f; }
-.rs-portfolio-hero__annotations .is-trough { fill: #ad3429; }
-.rs-portfolio-hero__note { fill: #425b79; font: 700 15px Arial, Helvetica, sans-serif; }
+.rs-corr-bubble--1 { animation: rsCorrPulse 8.2s ease-in-out infinite; }
+.rs-corr-bubble--2 { animation: rsCorrPulse 9.6s ease-in-out -3.1s infinite; }
+.rs-corr-bubble--3 { animation: rsCorrPulse 7.8s ease-in-out -1.7s infinite; }
+.rs-corr-bubble--4 { animation: rsCorrPulse 10.4s ease-in-out -5.2s infinite; }
+.rs-corr-bubble--5 { animation: rsCorrPulse 8.8s ease-in-out -4.3s infinite; }
+.rs-corr-bubble--6 { animation: rsCorrPulse 11s ease-in-out -2.4s infinite; }
+.rs-corr-bubble--7 { animation: rsCorrPulse 9.1s ease-in-out -6.5s infinite; }
+.rs-corr-bubble--8 { animation: rsCorrPulse 10.1s ease-in-out -1.2s infinite; }
+.rs-corr-bubble--9 { animation: rsCorrPulse 7.6s ease-in-out -3.8s infinite; }
+.rs-corr-bubble--10 { animation: rsCorrPulse 9.9s ease-in-out -7.1s infinite; }
+@keyframes rsCorrPulse {
+    0%, 100% { transform: scale(.91); opacity: .56; }
+    50% { transform: scale(1.08); opacity: .78; }
+}
 .rs-correlation-hero:hover .rs-correlation-hero__title,
 .rs-correlation-hero:focus-visible .rs-correlation-hero__title { color: #fff; }
 .rs-correlation-hero:hover .rs-correlation-hero__prompt { border-bottom-color: #fff; }
 .rs-correlation-hero:focus-visible { outline: 3px solid #3A5FCD; outline-offset: -3px; }
 @media (max-width: 700px) {
-    .rs-feature-carousel { min-height: 440px; }
     .rs-correlation-hero { grid-template-columns: 1fr; }
     .rs-correlation-hero__copy { padding: 26px 24px 24px; }
     .rs-correlation-hero__text { max-width: none; }
     .rs-correlation-hero__prompt { margin-top: 16px; }
     .rs-correlation-hero__graphic { height: 220px; }
-    .rs-feature-carousel__controls { left: 50%; bottom: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
-    .rs-feature-slide { transition: none; }
+    .rs-corr-bubble { animation: none !important; opacity: .68; }
 }
 
 .rs-hero-section {
@@ -1015,7 +879,6 @@ div.c {
     </div>
   </div>
   <p id="rs-portfolio-status" class="rs-global-markets__status" aria-live="polite">Choose a preset or a portfolio saved on the Correlations page.</p>
-  <p class="rs-portfolio-create-note">A portfolio can be created in <a href="/portfolio_optimization/">Portfolio Analytics</a>. It is saved only in the user&rsquo;s browser cache and is not retained by RiskSnap.com.</p>
   <div class="rs-portfolio-table-wrap" hidden>
     <table class="rs-portfolio-table">
       <thead><tr><th>Symbol</th><th>Shares</th><th>EOD</th><th>Pre-market</th><th>Pre-market change</th></tr></thead>
@@ -1033,8 +896,6 @@ div.c {
 .rs-portfolio-quotes h2 { margin: 0; color: #244d84; font-size: 18px; }
 .rs-portfolio-quotes__controls { display: grid; grid-template-columns: auto minmax(190px, 280px) auto; align-items: center; gap: 7px; }
 .rs-portfolio-quotes__controls label { color: #475a70; font-size: 11px; font-weight: 700; }
-.rs-portfolio-create-note { margin: 3px 0 0; color: #52657a; font-size: 12px; }
-.rs-portfolio-create-note a { color: #245ca6; font-weight: 700; text-decoration: underline; }
 .rs-portfolio-quotes select, .rs-portfolio-quotes button { min-height: 31px; border: 1px solid #9bacc0; border-radius: 5px; background: #fff; }
 .rs-portfolio-quotes button { padding: 4px 10px; color: #fff; border-color: #2f5f9f; background: #2f5f9f; cursor: pointer; }
 .rs-portfolio-table-wrap { margin-top: 8px; overflow-x: auto; }
@@ -1069,9 +930,6 @@ div.c {
     return [];
   };
   const normalizeHoldings = value => {
-    if (typeof value === "string") {
-      return listValues(value).map(symbol => ({ symbol: cleanSymbol(symbol), shares: null })).filter(item => item.symbol);
-    }
     if (value && typeof value === "object" && !Array.isArray(value)) {
       const securities = listValues(value.SECURITIES ?? value.securities);
       const shares = listValues(value.SHARES ?? value.shares);
@@ -1100,7 +958,7 @@ div.c {
     }).filter(item => item.symbol);
     return [];
   };
-  const addGroup = (label, raw, prefix, labels) => {
+  const addGroup = (label, raw, prefix) => {
     if (!raw || typeof raw !== "object") return;
     const group = document.createElement("optgroup");
     group.label = label;
@@ -1114,7 +972,7 @@ div.c {
       selections.set(id, holdings);
       const option = document.createElement("option");
       option.value = id;
-      option.textContent = String((value && value.label) || (labels && labels[name]) || name).replace(/_/g, " ");
+      option.textContent = String((value && value.label) || name).replace(/_/g, " ");
       group.appendChild(option);
     });
     if (group.children.length) choice.appendChild(group);
@@ -1145,7 +1003,7 @@ div.c {
     try {
       const response = await fetch(`${endpoint}/risksnap_config`);
       const config = await response.json();
-      addGroup("RiskSnap presets", config.portfolio_presets || config.presets || config.PORTFOLIO_PRESETS, "preset", config.preset_labels || config.PRESET_LABELS);
+      addGroup("RiskSnap presets", config.portfolio_presets || config.presets || config.PORTFOLIO_PRESETS, "preset");
     } catch (error) { /* saved portfolios can still be shown */ }
     addGroup("Saved portfolios", savedPortfolios(), "saved");
     if (choice.options.length === 1) {

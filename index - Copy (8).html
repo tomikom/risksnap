@@ -1069,9 +1069,6 @@ div.c {
     return [];
   };
   const normalizeHoldings = value => {
-    if (typeof value === "string") {
-      return listValues(value).map(symbol => ({ symbol: cleanSymbol(symbol), shares: null })).filter(item => item.symbol);
-    }
     if (value && typeof value === "object" && !Array.isArray(value)) {
       const securities = listValues(value.SECURITIES ?? value.securities);
       const shares = listValues(value.SHARES ?? value.shares);
@@ -1100,7 +1097,7 @@ div.c {
     }).filter(item => item.symbol);
     return [];
   };
-  const addGroup = (label, raw, prefix, labels) => {
+  const addGroup = (label, raw, prefix) => {
     if (!raw || typeof raw !== "object") return;
     const group = document.createElement("optgroup");
     group.label = label;
@@ -1114,7 +1111,7 @@ div.c {
       selections.set(id, holdings);
       const option = document.createElement("option");
       option.value = id;
-      option.textContent = String((value && value.label) || (labels && labels[name]) || name).replace(/_/g, " ");
+      option.textContent = String((value && value.label) || name).replace(/_/g, " ");
       group.appendChild(option);
     });
     if (group.children.length) choice.appendChild(group);
@@ -1145,7 +1142,7 @@ div.c {
     try {
       const response = await fetch(`${endpoint}/risksnap_config`);
       const config = await response.json();
-      addGroup("RiskSnap presets", config.portfolio_presets || config.presets || config.PORTFOLIO_PRESETS, "preset", config.preset_labels || config.PRESET_LABELS);
+      addGroup("RiskSnap presets", config.portfolio_presets || config.presets || config.PORTFOLIO_PRESETS, "preset");
     } catch (error) { /* saved portfolios can still be shown */ }
     addGroup("Saved portfolios", savedPortfolios(), "saved");
     if (choice.options.length === 1) {
