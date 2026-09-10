@@ -167,7 +167,7 @@ layout: home-template
     width: 100vw;
     margin-left: calc(50% - 50vw);
     overflow: hidden;
-    background: #365f82;
+    background: #0000ff;
     color: #fff;
     text-decoration: none;
 }
@@ -177,7 +177,7 @@ layout: home-template
     min-height: clamp(220px, 22vw, 320px);
     margin-left: calc(50% - 50vw);
     overflow: hidden;
-    background: #365f82;
+    background: #0000ff;
 }
 .rs-feature-slide {
     margin-left: 0;
@@ -279,7 +279,7 @@ layout: home-template
 .rs-corr-bubble--blue { fill: #3478c9; stroke: #245fa5; }
 .rs-corr-bubble--purple { fill: #7057b8; stroke: #584198; }
 .rs-corr-bubble--coral { fill: #e57a6f; stroke: #c75f55; }
-.rs-portfolio-hero { background: #294f73; }
+.rs-portfolio-hero { background: #0000ff; }
 .rs-portfolio-hero__grid path { fill: none; stroke: #9eb3cf; stroke-width: 1; opacity: .4; }
 .rs-portfolio-hero__axis text { fill: #617186; font: 13px Arial, Helvetica, sans-serif; }
 .rs-portfolio-hero__axis text:nth-child(-n+4) { text-anchor: end; }
@@ -1002,7 +1002,8 @@ div.c {
 })();
 </script>
 
-<section class="rs-portfolio-quotes" aria-labelledby="rs-portfolio-quotes-title">
+<!-- RiskSnap landing page correction: exact banner blue and saved-share support, 2026-09-10 -->
+<section class="rs-portfolio-quotes" style="background:#0000FF !important;" aria-labelledby="rs-portfolio-quotes-title">
   <div class="rs-portfolio-quotes__heading">
     <div>
       <p class="rs-global-markets__eyebrow">Before the U.S. opening bell</p>
@@ -1028,7 +1029,7 @@ div.c {
 <p class="rs-broker-access-note"><strong>Broker access note:</strong> Markets commonly accessible to retail investors through international brokers include the United States (NYSE and Nasdaq), Canada (TMX), United Kingdom (London Stock Exchange), Germany (Deutsche Börse), Japan (JPX), Hong Kong (HKEX), Switzerland (SIX) and Australia (ASX). Mainland China is generally accessed through eligible Stock Connect securities; India, South Korea, Taiwan, Brazil, Dubai and Saudi Arabia may require participating brokers, registration, custody arrangements or local onboarding. Availability varies by jurisdiction, security and account type.</p>
 
 <style>
-.rs-portfolio-quotes { margin: 0 0 12px; padding: 12px; border: 1px solid #294f73; border-radius: 10px; background: #365f82; color: #fff; font-family: Arial, Helvetica, sans-serif; }
+.rs-portfolio-quotes { margin: 0 0 12px; padding: 12px; border: 1px solid #0000CC; border-radius: 10px; background: #0000FF; color: #fff; font-family: Arial, Helvetica, sans-serif; }
 .rs-portfolio-quotes__heading { display: flex; justify-content: space-between; align-items: end; gap: 14px; flex-wrap: wrap; }
 .rs-portfolio-quotes h2 { margin: 0; color: #fff; font-size: 18px; }
 .rs-portfolio-quotes__controls { display: grid; grid-template-columns: auto minmax(190px, 280px) auto; align-items: center; gap: 7px; }
@@ -1079,15 +1080,19 @@ div.c {
     }
     if (value && typeof value === "object" && !Array.isArray(value)) {
       const securities = listValues(value.SECURITIES ?? value.securities);
-      const shares = listValues(value.SHARES ?? value.shares ?? value.QUANTITIES ?? value.quantities ?? value.QUANTITY ?? value.quantity ?? value.QTY ?? value.qty ?? value.UNITS ?? value.units);
+      const rawShares = value.SHARES ?? value.shares ?? value.QUANTITIES ?? value.quantities ?? value.QUANTITY ?? value.quantity ?? value.QTY ?? value.qty ?? value.UNITS ?? value.units;
+      const shares = listValues(rawShares);
+      const sharesBySymbol = rawShares && typeof rawShares === "object" && !Array.isArray(rawShares) ? rawShares : {};
       if (securities.length) return securities.map((security, index) => {
         if (security && typeof security === "object") {
+          const symbol = cleanSymbol(security.symbol || security.SYMBOL || security.ticker || security.TICKER || security.code || security.CODE);
           return {
-            symbol: cleanSymbol(security.symbol || security.ticker || security.code),
-            shares: holdingShares(security) ?? finiteShares(shares[index])
+            symbol,
+            shares: holdingShares(security) ?? finiteShares(sharesBySymbol[symbol]) ?? finiteShares(shares[index])
           };
         }
-        return { symbol: cleanSymbol(security), shares: finiteShares(shares[index]) };
+        const symbol = cleanSymbol(security);
+        return { symbol, shares: finiteShares(sharesBySymbol[symbol]) ?? finiteShares(shares[index]) };
       }).filter(item => item.symbol);
     }
     const source = value && typeof value === "object" && !Array.isArray(value)
