@@ -1026,7 +1026,6 @@ div.c {
   <p class="rs-portfolio-create-note">A portfolio can be created in <a href="/portfolio_optimization/">Portfolio Analytics</a>. It is saved only in the user&rsquo;s browser cache and is not retained by RiskSnap.com.</p>
   <p class="rs-portfolio-create-note">For portfolio valuations, go to the <a href="/correlations/">Correlations page</a>.</p>
   <div class="rs-portfolio-table-wrap" hidden>
-    <div class="rs-portfolio-results-bar"><button id="rs-portfolio-results-close" type="button">Close quotes</button></div>
     <table class="rs-portfolio-table">
       <thead><tr><th>Symbol</th><th>Shares</th><th id="rs-portfolio-eod-heading">EOD</th><th>Pre-market</th><th>Pre-market change</th></tr></thead>
       <tbody id="rs-portfolio-quote-rows"></tbody>
@@ -1057,8 +1056,6 @@ div.c {
 .rs-portfolio-quotes select, .rs-portfolio-quotes button { min-height: 31px; border: 1px solid #9bacc0; border-radius: 5px; background: #fff; }
 .rs-portfolio-quotes button { padding: 4px 10px; color: #fff; border-color: #2f5f9f; background: #2f5f9f; cursor: pointer; }
 .rs-portfolio-table-wrap { margin-top: 8px; overflow-x: auto; }
-.rs-portfolio-results-bar { position: sticky; left: 0; display: flex; justify-content: flex-end; margin-bottom: 5px; }
-.rs-portfolio-results-bar #rs-portfolio-results-close { min-height: 28px; padding: 3px 10px; }
 .rs-portfolio-table { width: 100%; border-collapse: collapse; color: #172536; font-size: 12px; }
 .rs-portfolio-table th, .rs-portfolio-table td { padding: 6px 8px; border-bottom: 1px solid rgba(23,37,54,.18); text-align: right; }
 .rs-portfolio-table th:first-child, .rs-portfolio-table td:first-child { text-align: left; font-weight: 700; }
@@ -1086,7 +1083,6 @@ div.c {
   const status = document.getElementById("rs-portfolio-status");
   const rows = document.getElementById("rs-portfolio-quote-rows");
   const wrap = document.querySelector(".rs-portfolio-table-wrap");
-  const resultsCloseButton = document.getElementById("rs-portfolio-results-close");
   const eodHeading = document.getElementById("rs-portfolio-eod-heading");
   if (!choice || !choiceButton || !choiceMenu || !choiceOptions || !button || !status || !rows || !wrap) return;
 
@@ -1281,11 +1277,6 @@ div.c {
   if (closeButton) closeButton.addEventListener("click", () => {
     choiceMenu.hidden = true;
     choiceButton.setAttribute("aria-expanded", "false");
-    choiceButton.focus();
-  });
-  if (resultsCloseButton) resultsCloseButton.addEventListener("click", () => {
-    wrap.hidden = true;
-    status.textContent = "Quote list closed. Choose Get quotes to display it again.";
     choiceButton.focus();
   });
   window.addEventListener("pageshow", buildChoices);

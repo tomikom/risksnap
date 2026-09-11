@@ -1003,7 +1003,7 @@ div.c {
 </script>
 
 <!-- RiskSnap landing page correction: exact banner blue and saved-share support, 2026-09-10 -->
-<section class="rs-portfolio-quotes" style="background:#E5F1FF !important;" aria-labelledby="rs-portfolio-quotes-title">
+<section class="rs-portfolio-quotes" style="background:#0000FF !important;" aria-labelledby="rs-portfolio-quotes-title">
   <div class="rs-portfolio-quotes__heading">
     <div>
       <p class="rs-global-markets__eyebrow">Before the U.S. opening bell</p>
@@ -1026,7 +1026,6 @@ div.c {
   <p class="rs-portfolio-create-note">A portfolio can be created in <a href="/portfolio_optimization/">Portfolio Analytics</a>. It is saved only in the user&rsquo;s browser cache and is not retained by RiskSnap.com.</p>
   <p class="rs-portfolio-create-note">For portfolio valuations, go to the <a href="/correlations/">Correlations page</a>.</p>
   <div class="rs-portfolio-table-wrap" hidden>
-    <div class="rs-portfolio-results-bar"><button id="rs-portfolio-results-close" type="button">Close quotes</button></div>
     <table class="rs-portfolio-table">
       <thead><tr><th>Symbol</th><th>Shares</th><th id="rs-portfolio-eod-heading">EOD</th><th>Pre-market</th><th>Pre-market change</th></tr></thead>
       <tbody id="rs-portfolio-quote-rows"></tbody>
@@ -1038,11 +1037,11 @@ div.c {
 <p class="rs-broker-access-note"><strong>Broker access note:</strong> Markets commonly accessible to retail investors through international brokers include the United States (NYSE and Nasdaq), Canada (TMX), United Kingdom (London Stock Exchange), Germany (Deutsche Börse), Japan (JPX), Hong Kong (HKEX), Switzerland (SIX) and Australia (ASX). Mainland China is generally accessed through eligible Stock Connect securities; India, South Korea, Taiwan, Brazil, Dubai and Saudi Arabia may require participating brokers, registration, custody arrangements or local onboarding. Availability varies by jurisdiction, security and account type.</p>
 
 <style>
-.rs-portfolio-quotes { margin: 0 0 12px; padding: 12px; border: 1px solid #9fc4ee; border-radius: 10px; background: #E5F1FF; color: #172536; font-family: Arial, Helvetica, sans-serif; }
+.rs-portfolio-quotes { margin: 0 0 12px; padding: 12px; border: 1px solid #0000CC; border-radius: 10px; background: #0000FF; color: #fff; font-family: Arial, Helvetica, sans-serif; }
 .rs-portfolio-quotes__heading { display: flex; justify-content: space-between; align-items: end; gap: 14px; flex-wrap: wrap; }
-.rs-portfolio-quotes h2 { margin: 0; color: #172536; font-size: 18px; }
+.rs-portfolio-quotes h2 { margin: 0; color: #fff; font-size: 18px; }
 .rs-portfolio-quotes__controls { display: grid; grid-template-columns: auto minmax(190px, 280px) auto; align-items: center; gap: 7px; }
-.rs-portfolio-choice-label { color: #172536; font-size: 11px; font-weight: 700; }
+.rs-portfolio-choice-label { color: #fff; font-size: 11px; font-weight: 700; }
 .rs-visually-hidden { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0,0,0,0) !important; white-space: nowrap !important; border: 0 !important; }
 .rs-portfolio-picker { position: relative; min-width: 0; }
 .rs-portfolio-choice-button { width: 100%; min-width: 0; text-align: left; color: #172536 !important; background: #fff !important; }
@@ -1052,19 +1051,17 @@ div.c {
 .rs-portfolio-choice-option { display: block; width: 100%; margin: 1px 0; padding: 7px 8px !important; border: 0 !important; color: #172536 !important; background: #fff !important; text-align: left; }
 .rs-portfolio-choice-option:hover, .rs-portfolio-choice-option:focus { background: #edf4ff !important; }
 .rs-portfolio-choice-menu .rs-portfolio-close { position: sticky; bottom: 0; width: 100%; margin-top: 6px; color: #fff; background: #2f5f9f; }
-.rs-portfolio-create-note { margin: 3px 0 0; color: #354b63; font-size: 12px; }
-.rs-portfolio-create-note a { color: #174f91; font-weight: 700; text-decoration: underline; }
+.rs-portfolio-create-note { margin: 3px 0 0; color: #edf5fc; font-size: 12px; }
+.rs-portfolio-create-note a { color: #fff; font-weight: 700; text-decoration: underline; }
 .rs-portfolio-quotes select, .rs-portfolio-quotes button { min-height: 31px; border: 1px solid #9bacc0; border-radius: 5px; background: #fff; }
 .rs-portfolio-quotes button { padding: 4px 10px; color: #fff; border-color: #2f5f9f; background: #2f5f9f; cursor: pointer; }
 .rs-portfolio-table-wrap { margin-top: 8px; overflow-x: auto; }
-.rs-portfolio-results-bar { position: sticky; left: 0; display: flex; justify-content: flex-end; margin-bottom: 5px; }
-.rs-portfolio-results-bar #rs-portfolio-results-close { min-height: 28px; padding: 3px 10px; }
-.rs-portfolio-table { width: 100%; border-collapse: collapse; color: #172536; font-size: 12px; }
-.rs-portfolio-table th, .rs-portfolio-table td { padding: 6px 8px; border-bottom: 1px solid rgba(23,37,54,.18); text-align: right; }
+.rs-portfolio-table { width: 100%; border-collapse: collapse; color: #fff; font-size: 12px; }
+.rs-portfolio-table th, .rs-portfolio-table td { padding: 6px 8px; border-bottom: 1px solid rgba(255,255,255,.25); text-align: right; }
 .rs-portfolio-table th:first-child, .rs-portfolio-table td:first-child { text-align: left; font-weight: 700; }
-.rs-portfolio-change.is-up { color: #14733d; }
-.rs-portfolio-change.is-down { color: #a62f25; }
-.rs-portfolio-quotes .rs-global-markets__status, .rs-portfolio-quotes .rs-global-markets__note { color: #354b63; }
+.rs-portfolio-change.is-up { color: #a9f0c4; }
+.rs-portfolio-change.is-down { color: #ffd0cb; }
+.rs-portfolio-quotes .rs-global-markets__status, .rs-portfolio-quotes .rs-global-markets__note { color: #edf5fc; }
 .rs-broker-access-note { margin: 3px 4px 14px; color: #657386; font: 9px/1.35 Arial, Helvetica, sans-serif; }
 @media (max-width: 650px) {
   .rs-portfolio-quotes__controls { width: 100%; grid-template-columns: 1fr auto; }
@@ -1086,7 +1083,6 @@ div.c {
   const status = document.getElementById("rs-portfolio-status");
   const rows = document.getElementById("rs-portfolio-quote-rows");
   const wrap = document.querySelector(".rs-portfolio-table-wrap");
-  const resultsCloseButton = document.getElementById("rs-portfolio-results-close");
   const eodHeading = document.getElementById("rs-portfolio-eod-heading");
   if (!choice || !choiceButton || !choiceMenu || !choiceOptions || !button || !status || !rows || !wrap) return;
 
@@ -1281,11 +1277,6 @@ div.c {
   if (closeButton) closeButton.addEventListener("click", () => {
     choiceMenu.hidden = true;
     choiceButton.setAttribute("aria-expanded", "false");
-    choiceButton.focus();
-  });
-  if (resultsCloseButton) resultsCloseButton.addEventListener("click", () => {
-    wrap.hidden = true;
-    status.textContent = "Quote list closed. Choose Get quotes to display it again.";
     choiceButton.focus();
   });
   window.addEventListener("pageshow", buildChoices);
@@ -1627,10 +1618,6 @@ For historical volatilities refer to the diagonal on the correlations matrix at 
    <div class="a"><p>Correlation covers all risk factors. Some of the most watched risk factors can be found in <a href="https://www.risksnap.com/correlations/"">Correlations</a> page
 </div>
 	
-</div>
-<div class="frame6">
-   <h4>Dispersion - Portfolios</h4>
-   <div class="a"><p>Dispersion shows how differently the securities in a portfolio are moving. A widening fan indicates greater divergence, while a narrowing fan indicates more similar performance. Current and historical dispersion can be viewed on the <a href="https://www.risksnap.com/dispersion/">Dispersion Index</a> page.</p></div>
 </div>
 <div class="frame2">
 <h4>Volatility Surface - Equities</h4>
