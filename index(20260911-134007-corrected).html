@@ -167,17 +167,17 @@ layout: home-template
     width: 100vw;
     margin-left: calc(50% - 50vw);
     overflow: hidden;
-    background: #365f82;
+    background: #0000ff;
     color: #fff;
     text-decoration: none;
 }
 .rs-feature-carousel {
     position: relative;
     width: 100vw;
-    min-height: clamp(220px, 22vw, 320px);
+    min-height: clamp(190px, 18vw, 260px);
     margin-left: calc(50% - 50vw);
     overflow: hidden;
-    background: #365f82;
+    background: #0000ff;
 }
 .rs-feature-slide {
     margin-left: 0;
@@ -218,7 +218,7 @@ layout: home-template
 .rs-correlation-hero__graphic {
     display: block;
     width: 100%;
-    height: clamp(220px, 22vw, 320px);
+    height: clamp(190px, 18vw, 260px);
     background: #eaf2ff;
 }
 .rs-correlation-hero__copy {
@@ -279,7 +279,7 @@ layout: home-template
 .rs-corr-bubble--blue { fill: #3478c9; stroke: #245fa5; }
 .rs-corr-bubble--purple { fill: #7057b8; stroke: #584198; }
 .rs-corr-bubble--coral { fill: #e57a6f; stroke: #c75f55; }
-.rs-portfolio-hero { background: #294f73; }
+.rs-portfolio-hero { background: #0000ff; }
 .rs-portfolio-hero__grid path { fill: none; stroke: #9eb3cf; stroke-width: 1; opacity: .4; }
 .rs-portfolio-hero__axis text { fill: #617186; font: 13px Arial, Helvetica, sans-serif; }
 .rs-portfolio-hero__axis text:nth-child(-n+4) { text-anchor: end; }
@@ -297,12 +297,12 @@ layout: home-template
 .rs-correlation-hero:hover .rs-correlation-hero__prompt { border-bottom-color: #fff; }
 .rs-correlation-hero:focus-visible { outline: 3px solid #3A5FCD; outline-offset: -3px; }
 @media (max-width: 700px) {
-    .rs-feature-carousel { min-height: 440px; }
+    .rs-feature-carousel { min-height: 390px; }
     .rs-correlation-hero { grid-template-columns: 1fr; }
     .rs-correlation-hero__copy { padding: 26px 24px 24px; }
     .rs-correlation-hero__text { max-width: none; }
     .rs-correlation-hero__prompt { margin-top: 16px; }
-    .rs-correlation-hero__graphic { height: 220px; }
+    .rs-correlation-hero__graphic { height: 190px; }
     .rs-feature-carousel__controls { left: 50%; bottom: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1002,23 +1002,33 @@ div.c {
 })();
 </script>
 
-<section class="rs-portfolio-quotes" aria-labelledby="rs-portfolio-quotes-title">
+<!-- RiskSnap landing page correction: exact banner blue and saved-share support, 2026-09-10 -->
+<section class="rs-portfolio-quotes" style="background:#E5F1FF !important;" aria-labelledby="rs-portfolio-quotes-title">
   <div class="rs-portfolio-quotes__heading">
     <div>
       <p class="rs-global-markets__eyebrow">Before the U.S. opening bell</p>
       <h2 id="rs-portfolio-quotes-title">Portfolio and preset pre-market quotes</h2>
     </div>
     <div class="rs-portfolio-quotes__controls">
-      <label for="rs-portfolio-choice">Portfolio or preset</label>
-      <select id="rs-portfolio-choice"><option value="">Loading choices…</option></select>
+      <span class="rs-portfolio-choice-label">Portfolio or preset</span>
+      <div class="rs-portfolio-picker">
+        <button id="rs-portfolio-choice-button" class="rs-portfolio-choice-button" type="button" aria-haspopup="true" aria-expanded="false">Loading choices…</button>
+        <div id="rs-portfolio-choice-menu" class="rs-portfolio-choice-menu" hidden>
+          <div id="rs-portfolio-choice-options"></div>
+          <button id="rs-portfolio-close" class="rs-portfolio-close" type="button">Close list</button>
+        </div>
+      </div>
+      <select id="rs-portfolio-choice" class="rs-visually-hidden" tabindex="-1" aria-hidden="true"><option value="">Loading choices…</option></select>
       <button id="rs-portfolio-load" type="button">Get quotes</button>
+      <button id="rs-portfolio-results-close" type="button" hidden>Close list</button>
     </div>
   </div>
   <p id="rs-portfolio-status" class="rs-global-markets__status" aria-live="polite">Choose a preset or a portfolio saved on the Correlations page.</p>
   <p class="rs-portfolio-create-note">A portfolio can be created in <a href="/portfolio_optimization/">Portfolio Analytics</a>. It is saved only in the user&rsquo;s browser cache and is not retained by RiskSnap.com.</p>
+  <p class="rs-portfolio-create-note">For portfolio valuations, go to the <a href="/correlations/">Correlations page</a>.</p>
   <div class="rs-portfolio-table-wrap" hidden>
     <table class="rs-portfolio-table">
-      <thead><tr><th>Symbol</th><th>Shares</th><th>EOD</th><th>Pre-market</th><th>Pre-market change</th></tr></thead>
+      <thead><tr><th>Symbol</th><th>Shares</th><th id="rs-portfolio-eod-heading">EOD</th><th>Pre-market</th><th>Pre-market change</th></tr></thead>
       <tbody id="rs-portfolio-quote-rows"></tbody>
     </table>
   </div>
@@ -1028,25 +1038,37 @@ div.c {
 <p class="rs-broker-access-note"><strong>Broker access note:</strong> Markets commonly accessible to retail investors through international brokers include the United States (NYSE and Nasdaq), Canada (TMX), United Kingdom (London Stock Exchange), Germany (Deutsche Börse), Japan (JPX), Hong Kong (HKEX), Switzerland (SIX) and Australia (ASX). Mainland China is generally accessed through eligible Stock Connect securities; India, South Korea, Taiwan, Brazil, Dubai and Saudi Arabia may require participating brokers, registration, custody arrangements or local onboarding. Availability varies by jurisdiction, security and account type.</p>
 
 <style>
-.rs-portfolio-quotes { margin: 0 0 12px; padding: 12px; border: 1px solid #cddbec; border-radius: 10px; background: #f7faff; font-family: Arial, Helvetica, sans-serif; }
+.rs-portfolio-quotes { margin: 0 0 12px; padding: 12px; border: 1px solid #9fc4ee; border-radius: 10px; background: #E5F1FF; color: #172536; font-family: Arial, Helvetica, sans-serif; }
 .rs-portfolio-quotes__heading { display: flex; justify-content: space-between; align-items: end; gap: 14px; flex-wrap: wrap; }
-.rs-portfolio-quotes h2 { margin: 0; color: #244d84; font-size: 18px; }
+.rs-portfolio-quotes h2 { margin: 0; color: #172536; font-size: 18px; }
 .rs-portfolio-quotes__controls { display: grid; grid-template-columns: auto minmax(190px, 280px) auto; align-items: center; gap: 7px; }
-.rs-portfolio-quotes__controls label { color: #475a70; font-size: 11px; font-weight: 700; }
-.rs-portfolio-create-note { margin: 3px 0 0; color: #52657a; font-size: 12px; }
-.rs-portfolio-create-note a { color: #245ca6; font-weight: 700; text-decoration: underline; }
+.rs-portfolio-choice-label { color: #172536; font-size: 11px; font-weight: 700; }
+.rs-visually-hidden { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0,0,0,0) !important; white-space: nowrap !important; border: 0 !important; }
+.rs-portfolio-picker { position: relative; min-width: 0; }
+.rs-portfolio-choice-button { width: 100%; min-width: 0; text-align: left; color: #172536 !important; background: #fff !important; }
+.rs-portfolio-choice-menu { position: absolute; z-index: 50; top: calc(100% + 4px); left: 0; width: min(340px, 88vw); max-height: 60vh; overflow-y: auto; padding: 7px; border: 1px solid #9bacc0; border-radius: 7px; background: #fff; box-shadow: 0 5px 18px rgba(0,0,0,.25); }
+.rs-portfolio-choice-menu [role="group"] { margin: 3px 0 7px; }
+.rs-portfolio-choice-group { padding: 4px 6px; color: #536579; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.rs-portfolio-choice-option { display: block; width: 100%; margin: 1px 0; padding: 7px 8px !important; border: 0 !important; color: #172536 !important; background: #fff !important; text-align: left; }
+.rs-portfolio-choice-option:hover, .rs-portfolio-choice-option:focus { background: #edf4ff !important; }
+.rs-portfolio-choice-menu .rs-portfolio-close { position: sticky; bottom: 0; width: 100%; margin-top: 6px; color: #fff; background: #2f5f9f; }
+.rs-portfolio-create-note { margin: 3px 0 0; color: #354b63; font-size: 12px; }
+.rs-portfolio-create-note a { color: #174f91; font-weight: 700; text-decoration: underline; }
 .rs-portfolio-quotes select, .rs-portfolio-quotes button { min-height: 31px; border: 1px solid #9bacc0; border-radius: 5px; background: #fff; }
 .rs-portfolio-quotes button { padding: 4px 10px; color: #fff; border-color: #2f5f9f; background: #2f5f9f; cursor: pointer; }
 .rs-portfolio-table-wrap { margin-top: 8px; overflow-x: auto; }
-.rs-portfolio-table { width: 100%; border-collapse: collapse; color: #26384c; font-size: 12px; }
-.rs-portfolio-table th, .rs-portfolio-table td { padding: 6px 8px; border-bottom: 1px solid #dce5ef; text-align: right; }
+.rs-portfolio-table { width: 100%; border-collapse: collapse; color: #172536; font-size: 12px; }
+.rs-portfolio-table th, .rs-portfolio-table td { padding: 6px 8px; border-bottom: 1px solid rgba(23,37,54,.18); text-align: right; }
 .rs-portfolio-table th:first-child, .rs-portfolio-table td:first-child { text-align: left; font-weight: 700; }
-.rs-portfolio-change.is-up { color: #147a43; }
-.rs-portfolio-change.is-down { color: #b23b32; }
+.rs-portfolio-change.is-up { color: #14733d; }
+.rs-portfolio-change.is-down { color: #a62f25; }
+.rs-portfolio-quotes .rs-global-markets__status, .rs-portfolio-quotes .rs-global-markets__note { color: #354b63; }
 .rs-broker-access-note { margin: 3px 4px 14px; color: #657386; font: 9px/1.35 Arial, Helvetica, sans-serif; }
 @media (max-width: 650px) {
   .rs-portfolio-quotes__controls { width: 100%; grid-template-columns: 1fr auto; }
-  .rs-portfolio-quotes__controls label { grid-column: 1 / -1; }
+  .rs-portfolio-choice-label { grid-column: 1 / -1; }
+  .rs-portfolio-picker { width: 100%; }
+  .rs-portfolio-choice-menu { position: fixed; top: 12%; left: 5%; width: 90%; max-height: 76vh; box-sizing: border-box; }
 }
 </style>
 
@@ -1054,15 +1076,24 @@ div.c {
 (function () {
   const endpoint = "https://surface-203178530029.northamerica-northeast2.run.app";
   const choice = document.getElementById("rs-portfolio-choice");
+  const choiceButton = document.getElementById("rs-portfolio-choice-button");
+  const choiceMenu = document.getElementById("rs-portfolio-choice-menu");
+  const choiceOptions = document.getElementById("rs-portfolio-choice-options");
   const button = document.getElementById("rs-portfolio-load");
+  const resultsCloseButton = document.getElementById("rs-portfolio-results-close");
+  const closeButton = document.getElementById("rs-portfolio-close");
   const status = document.getElementById("rs-portfolio-status");
   const rows = document.getElementById("rs-portfolio-quote-rows");
   const wrap = document.querySelector(".rs-portfolio-table-wrap");
-  if (!choice || !button || !status || !rows || !wrap) return;
+  const eodHeading = document.getElementById("rs-portfolio-eod-heading");
+  if (!choice || !choiceButton || !choiceMenu || !choiceOptions || !button || !status || !rows || !wrap) return;
 
   const selections = new Map();
   const cleanSymbol = value => String(value || "").trim().toUpperCase();
   const finiteShares = value => value !== null && value !== undefined && value !== "" && Number.isFinite(Number(value)) ? Number(value) : null;
+  const holdingShares = value => value && typeof value === "object"
+    ? finiteShares(value.shares ?? value.SHARES ?? value.quantity ?? value.QUANTITY ?? value.qty ?? value.QTY ?? value.units ?? value.UNITS)
+    : finiteShares(value);
   const listValues = value => {
     if (Array.isArray(value)) return value;
     if (typeof value === "string") return value.split(/[;,\n]+/).map(item => item.trim()).filter(Boolean);
@@ -1074,29 +1105,38 @@ div.c {
     }
     if (value && typeof value === "object" && !Array.isArray(value)) {
       const securities = listValues(value.SECURITIES ?? value.securities);
-      const shares = listValues(value.SHARES ?? value.shares);
+      const rawShares = value.SHARES ?? value.shares ?? value.QUANTITIES ?? value.quantities ?? value.QUANTITY ?? value.quantity ?? value.QTY ?? value.qty ?? value.UNITS ?? value.units;
+      const shares = listValues(rawShares);
+      const sharesBySymbol = rawShares && typeof rawShares === "object" && !Array.isArray(rawShares) ? rawShares : {};
       if (securities.length) return securities.map((security, index) => {
         if (security && typeof security === "object") {
+          const symbol = cleanSymbol(security.symbol || security.SYMBOL || security.ticker || security.TICKER || security.code || security.CODE);
           return {
-            symbol: cleanSymbol(security.symbol || security.ticker || security.code),
-            shares: finiteShares(security.shares ?? security.quantity ?? security.qty ?? shares[index])
+            symbol,
+            shares: holdingShares(security) ?? finiteShares(sharesBySymbol[symbol]) ?? finiteShares(shares[index])
           };
         }
-        return { symbol: cleanSymbol(security), shares: finiteShares(shares[index]) };
+        const symbol = cleanSymbol(security);
+        return { symbol, shares: finiteShares(sharesBySymbol[symbol]) ?? finiteShares(shares[index]) };
       }).filter(item => item.symbol);
     }
     const source = value && typeof value === "object" && !Array.isArray(value)
       ? (value.holdings || value.positions || value.assets || value.symbols || value.tickers || value)
       : value;
-    if (Array.isArray(source)) return source.map(item => {
+    if (Array.isArray(source)) {
+      const parallelShares = value && typeof value === "object" && !Array.isArray(value)
+        ? listValues(value.SHARES ?? value.shares ?? value.QUANTITIES ?? value.quantities ?? value.QUANTITY ?? value.quantity ?? value.QTY ?? value.qty ?? value.UNITS ?? value.units)
+        : [];
+      return source.map((item, index) => {
       if (typeof item === "string") return { symbol: cleanSymbol(item), shares: null };
-      return { symbol: cleanSymbol(item.symbol || item.ticker || item.code), shares: finiteShares(item.shares ?? item.quantity ?? item.qty ?? item.weight) };
-    }).filter(item => item.symbol);
+      return { symbol: cleanSymbol(item.symbol || item.SYMBOL || item.ticker || item.TICKER || item.code || item.CODE), shares: holdingShares(item) ?? finiteShares(parallelShares[index]) };
+      }).map((item, index) => item.shares == null ? { ...item, shares: finiteShares(parallelShares[index]) } : item).filter(item => item.symbol);
+    }
     if (source && typeof source === "object") return Object.entries(source).filter(([symbol]) =>
       !/^(name|label|securities|shares|bookvalue|book_value|cash)$/i.test(symbol)
     ).map(([symbol, amount]) => {
       const nested = amount && typeof amount === "object" ? amount : {};
-      return { symbol: cleanSymbol(nested.symbol || nested.ticker || symbol), shares: finiteShares(nested.shares ?? nested.quantity ?? nested.qty ?? amount) };
+      return { symbol: cleanSymbol(nested.symbol || nested.SYMBOL || nested.ticker || nested.TICKER || symbol), shares: holdingShares(nested) ?? holdingShares(amount) };
     }).filter(item => item.symbol);
     return [];
   };
@@ -1121,24 +1161,40 @@ div.c {
   };
   const savedPortfolios = () => {
     const found = {};
-    try {
-      for (let index = 0; index < localStorage.length; index += 1) {
-        const key = localStorage.key(index);
-        if (!/portfolio/i.test(key || "")) continue;
+    const inspectStorage = storage => {
+      try {
+        for (let index = 0; index < storage.length; index += 1) {
+          const key = storage.key(index);
         let parsed;
-        try { parsed = JSON.parse(localStorage.getItem(key)); } catch (error) { continue; }
+          try { parsed = JSON.parse(storage.getItem(key)); } catch (error) { continue; }
         if (!parsed) continue;
-        if (Array.isArray(parsed)) parsed.forEach((item, itemIndex) => {
-          if (item && typeof item === "object") found[item.name || item.label || `${key} ${itemIndex + 1}`] = item;
-        });
-        else if (typeof parsed === "object") Object.assign(found, parsed.portfolios || parsed.savedPortfolios || parsed);
-      }
-    } catch (error) { /* local storage may be disabled */ }
+          const named = parsed && typeof parsed === "object" && !Array.isArray(parsed)
+            ? (parsed.portfolios || parsed.savedPortfolios || parsed.saved_portfolios || parsed.portfoliosByName || parsed.savedSelections)
+            : null;
+          const candidate = named || (/portfolio|watch|saved/i.test(key || "") ? parsed : null);
+          if (!candidate) continue;
+          if (Array.isArray(candidate)) candidate.forEach((item, itemIndex) => {
+            if (normalizeHoldings(item).length) found[item && (item.name || item.label) || `${key} ${itemIndex + 1}`] = item;
+          });
+          else if (typeof candidate === "object") Object.entries(candidate).forEach(([name, item]) => {
+            if (normalizeHoldings(item).length) found[name] = item;
+          });
+        }
+      } catch (error) { /* browser storage may be disabled */ }
+    };
+    inspectStorage(localStorage);
+    inspectStorage(sessionStorage);
     return found;
   };
   const preMarketEligible = symbol => !symbol.startsWith("^") && !symbol.includes("=") && !symbol.endsWith("-USD") && !/\.[A-Z]{1,3}$/.test(symbol);
   const money = value => Number(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
   const safe = value => String(value == null ? "" : value).replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" })[character]);
+  const dateLabel = value => {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
+    return date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
+  };
 
   async function buildChoices() {
     choice.innerHTML = '<option value="">Select…</option>';
@@ -1152,6 +1208,33 @@ div.c {
       choice.options[0].textContent = "No portfolios found";
       status.textContent = "Create and save portfolios on the Correlations page.";
     }
+    choiceOptions.innerHTML = "";
+    Array.from(choice.children).forEach(child => {
+      if (child.tagName === "OPTGROUP") {
+        const group = document.createElement("div");
+        group.setAttribute("role", "group");
+        const heading = document.createElement("div");
+        heading.className = "rs-portfolio-choice-group";
+        heading.textContent = child.label;
+        group.appendChild(heading);
+        Array.from(child.children).forEach(option => {
+          const item = document.createElement("button");
+          item.type = "button";
+          item.className = "rs-portfolio-choice-option";
+          item.textContent = option.textContent;
+          item.addEventListener("click", () => {
+            choice.value = option.value;
+            choiceButton.textContent = option.textContent;
+            choiceMenu.hidden = true;
+            choiceButton.setAttribute("aria-expanded", "false");
+            loadQuotes();
+          });
+          group.appendChild(item);
+        });
+        choiceOptions.appendChild(group);
+      }
+    });
+    choiceButton.textContent = choice.options.length > 1 ? "Select…" : choice.options[0].textContent;
   }
 
   async function loadQuotes() {
@@ -1161,6 +1244,7 @@ div.c {
     status.textContent = "Loading EOD and pre-market quotes…";
     rows.innerHTML = "";
     wrap.hidden = false;
+    if (resultsCloseButton) resultsCloseButton.hidden = false;
     try {
       const response = await fetch(`${endpoint}/latest_prices`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ symbols: holdings.map(item => item.symbol) }) });
       const payload = await response.json();
@@ -1168,6 +1252,10 @@ div.c {
       const pre = payload.pre_market_prices || {};
       const changes = payload.pre_market_changes || {};
       const percents = payload.pre_market_change_percents || {};
+      const eodDates = payload.eod_dates || payload.price_dates || {};
+      const firstSymbolDate = holdings.map(item => eodDates[item.symbol]).find(Boolean);
+      const eodAsOf = firstSymbolDate || payload.eod_timestamp || payload.eod_date || payload.as_of_date || payload.as_of;
+      if (eodHeading) eodHeading.innerHTML = `EOD${eodAsOf ? `<br><small>${safe(dateLabel(eodAsOf))}</small>` : ""}`;
       rows.innerHTML = holdings.map(item => {
         const eligible = preMarketEligible(item.symbol);
         const eodValue = Number(eod[item.symbol]);
@@ -1185,7 +1273,23 @@ div.c {
   }
 
   button.addEventListener("click", loadQuotes);
-  choice.addEventListener("change", () => { if (choice.value) loadQuotes(); });
+  if (resultsCloseButton) resultsCloseButton.addEventListener("click", () => {
+    wrap.hidden = true;
+    resultsCloseButton.hidden = true;
+  });
+  choiceButton.addEventListener("click", () => {
+    choiceMenu.hidden = !choiceMenu.hidden;
+    choiceButton.setAttribute("aria-expanded", String(!choiceMenu.hidden));
+  });
+  if (closeButton) closeButton.addEventListener("click", event => {
+    event.preventDefault();
+    event.stopPropagation();
+    choiceMenu.hidden = true;
+    choiceButton.setAttribute("aria-expanded", "false");
+    choiceButton.focus();
+  });
+  window.addEventListener("pageshow", buildChoices);
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) buildChoices(); });
   buildChoices();
 })();
 </script>
@@ -1453,7 +1557,34 @@ div.c {
 })();
 </script>
 
-<p class="world-news-link"><a href="https://www.reuters.com/world/" target="_blank" rel="noopener noreferrer">Reuters World News <span aria-hidden="true">↗</span></a></p>
+<style>
+/* Neutral, readable treatment for the three-column article area. */
+.row .column {
+  color: #172536;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.row .column.right,
+.row .column.right .frame1,
+.row .column.right .frame2,
+.row .column.right .frame3,
+.row .column.right .frame4,
+.row .column.right .frame5,
+.row .column.right .frame6 {
+  background: #f8fbff !important;
+  color: #172536 !important;
+}
+.row .column h2,
+.row .column h3,
+.row .column h4 {
+  color: #173b67 !important;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.2;
+}
+</style>
+
+<p class="world-news-link"><a href="https://news.google.com/home?hl=en-CA&amp;gl=CA&amp;ceid=CA%3Aen" target="_blank" rel="noopener noreferrer">Google News <span aria-hidden="true">↗</span></a> &nbsp; <a href="https://www.reuters.com/world/" target="_blank" rel="noopener noreferrer">Reuters World News <span aria-hidden="true">↗</span></a></p>
 <p>
 <div class="row">
 <div class="column left concentration-panel" style="background-color:#E5F1FF;">
@@ -1504,9 +1635,7 @@ this started to occur in March, right after the US incursion into Iran.
 	
 <p> 
 
-</div>
-
-<div class="column right frame1"> 
+<div class="frame1"> 
  <!--  <h4>Futures</h4>
  <p>
    <div class="a"><p>Energy Futures<p></div>
@@ -1519,30 +1648,36 @@ this started to occur in March, right after the US incursion into Iran.
 For historical volatilities refer to the diagonal on the correlations matrix at <a href="https://www.risksnap.com/correlations/">Correlations</a> page.For implied volatilities refer to our <a href="https://www.risksnap.com/surface/">Surface</a> page, where implied volatilities are provided both in 3d graphics and as a grid</a> 
 
 </div>
-<div class="column right frame4">
+<div class="frame4">
    <h4>Correlations</h4>
  <p>
    <div class="a"><p>Correlation covers all risk factors. Some of the most watched risk factors can be found in <a href="https://www.risksnap.com/correlations/"">Correlations</a> page
 </div>
 	
 </div>
-<div class="column right frame2">
+<div class="frame6">
+   <h4>Dispersion - Portfolios</h4>
+   <div class="a"><p>Dispersion shows how differently the securities in a portfolio are moving. A widening fan indicates greater divergence, while a narrowing fan indicates more similar performance. Current and historical dispersion can be viewed on the <a href="https://www.risksnap.com/dispersion/">Dispersion Index</a> page.</p></div>
+</div>
+<div class="frame2">
 <h4>Volatility Surface - Equities</h4>
  <p>
 <div class="a"><p>Real time implied vol surfaces from market sources can be viewed on <a href="https://www.risksnap.com/surface/">Surface</a> page</p></div>
 
 	
-<p>An example of a surface grid.  Grids are on the same page</p>
-	</div>
-<div class="column right frame3"> 
+
+<div class="frame3"> 
    <h4>Gamma - Equities</h4>
  <p>
-   <div class="a"><p>Gamma is the change in delta and is useful for viewing expected changes in equity prices due to option trading.  Gamma walls are also provided in the <a href="https://www.risksnap.com/gamma/"">Gamma</a> page <p>  The surface can be viewed as raw data.  The following shows the gamma walls.</div>
+     <div class="a"><p>Gamma is the change in delta and is useful for viewing expected changes in equity prices due to option trading.  Gamma walls are also provided in the <a href="https://www.risksnap.com/gamma/"">Gamma</a> page <p>  </div>
 </div>
 
 
 <p>
 </div>
+
+</div><!-- end right column -->
+</div><!-- end three-column row -->
 
 <h1 class="three-col-header">VaR as a Risk Measure</h1>
 <p class="paragraph">Value at Risk (VaR) is one of the most popular tools used in risk management and is incorporated within the Basel Accord for banking supervision.  VaR is used by central counterparties (CCPs) for purposes of determining initial margin.  VaR and Expected Shortfall (ES) are standard measures used by traders for setting risk limits and can be used by investors, traders and risk managers both for preventing panic selling (or buying) in periods of high volatility, and also preventing overreaching in periods of low volatility.

@@ -1020,6 +1020,7 @@ div.c {
       </div>
       <select id="rs-portfolio-choice" class="rs-visually-hidden" tabindex="-1" aria-hidden="true"><option value="">Loading choices…</option></select>
       <button id="rs-portfolio-load" type="button">Get quotes</button>
+      <button id="rs-portfolio-results-close" type="button" hidden>Close list</button>
     </div>
   </div>
   <p id="rs-portfolio-status" class="rs-global-markets__status" aria-live="polite">Choose a preset or a portfolio saved on the Correlations page.</p>
@@ -1079,6 +1080,7 @@ div.c {
   const choiceMenu = document.getElementById("rs-portfolio-choice-menu");
   const choiceOptions = document.getElementById("rs-portfolio-choice-options");
   const button = document.getElementById("rs-portfolio-load");
+  const resultsCloseButton = document.getElementById("rs-portfolio-results-close");
   const closeButton = document.getElementById("rs-portfolio-close");
   const status = document.getElementById("rs-portfolio-status");
   const rows = document.getElementById("rs-portfolio-quote-rows");
@@ -1242,6 +1244,7 @@ div.c {
     status.textContent = "Loading EOD and pre-market quotes…";
     rows.innerHTML = "";
     wrap.hidden = false;
+    if (resultsCloseButton) resultsCloseButton.hidden = false;
     try {
       const response = await fetch(`${endpoint}/latest_prices`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ symbols: holdings.map(item => item.symbol) }) });
       const payload = await response.json();
@@ -1270,6 +1273,10 @@ div.c {
   }
 
   button.addEventListener("click", loadQuotes);
+  if (resultsCloseButton) resultsCloseButton.addEventListener("click", () => {
+    wrap.hidden = true;
+    resultsCloseButton.hidden = true;
+  });
   choiceButton.addEventListener("click", () => {
     choiceMenu.hidden = !choiceMenu.hidden;
     choiceButton.setAttribute("aria-expanded", String(!choiceMenu.hidden));
